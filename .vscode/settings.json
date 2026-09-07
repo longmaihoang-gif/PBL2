@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": false,
+    "clangd.arguments": [
+        "--query-driver=C:/Program Files (x86)/Dev-Cpp/**/bin/g++.exe,C:/Program Files (x86)/Dev-Cpp/**/bin/*.exe,**",
+        "--header-insertion=never",
+        "--background-index"
+    ],
+    "files.associations": {
+        "*.h": "cpp",
+        "*.hpp": "cpp"
+    }
+}
