@@ -8,5 +8,10 @@
     "files.associations": {
         "*.h": "cpp",
         "*.hpp": "cpp"
-    }
+    },
+    "code-runner.executorMap": {
+        "cpp": "cd $workspaceRoot && build.bat"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true
 }

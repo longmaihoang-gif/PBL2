@@ -22,7 +22,7 @@ struct Node {
 
         // 🌟 Chiêu thức bổ trợ: Ép kiểu nhanh giá trị (Trả về con trỏ, nullptr nếu sai kiểu)
         template <typename T>
-        T* get() {
+        T* Get() {
             return any_cast<T>(&value);
         }
 };

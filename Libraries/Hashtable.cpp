@@ -40,7 +40,7 @@ HashTable::HashTable(size_t initCapacity, float threshold)
 // ============================================================
 
 HashTable::~HashTable() {
-    clear();
+    Clear();
 
     delete[] buckets;
 }
@@ -50,7 +50,7 @@ HashTable::~HashTable() {
 // Hash Function - DJB2
 // ============================================================
 
-size_t HashTable::hashFunction(const string& key) const {
+size_t HashTable::HashFunction(const string& key) const {
 
     unsigned long hash = 5381;
 
@@ -66,13 +66,13 @@ size_t HashTable::hashFunction(const string& key) const {
 // Insert
 // ============================================================
 
-void HashTable::insert(const string& key, const any& value) {
+void HashTable::Insert(const string& key, const any& value) {
 
     // --------------------------------------------------------
     // 1. Kiểm tra key đã tồn tại chưa
     // --------------------------------------------------------
 
-    size_t index = hashFunction(key);
+    size_t index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -99,11 +99,11 @@ void HashTable::insert(const string& key, const any& value) {
 
     if (newLoadFactor > loadFactorThreshold) {
 
-        rehash();
+        Rehash();
 
         // Sau khi rehash capacity đã thay đổi
         // nên phải tính lại index
-        index = hashFunction(key);
+        index = HashFunction(key);
     }
 
 
@@ -141,9 +141,9 @@ void HashTable::insert(const string& key, const any& value) {
 // Search - phiên bản thường
 // ============================================================
 
-any* HashTable::search(const string& key) {
+any* HashTable::Search(const string& key) {
 
-    size_t index = hashFunction(key);
+    size_t index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -164,9 +164,9 @@ any* HashTable::search(const string& key) {
 // Search - phiên bản const
 // ============================================================
 
-const any* HashTable::search(const string& key) const {
+const any* HashTable::Search(const string& key) const {
 
-    size_t index = hashFunction(key);
+    size_t index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -187,9 +187,9 @@ const any* HashTable::search(const string& key) const {
 // Remove
 // ============================================================
 
-bool HashTable::remove(const string& key) {
+bool HashTable::Remove(const string& key) {
 
-    size_t index = hashFunction(key);
+    size_t index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -241,9 +241,9 @@ bool HashTable::remove(const string& key) {
 // Contains
 // ============================================================
 
-bool HashTable::contains(const string& key) const {
+bool HashTable::Contains(const string& key) const {
 
-    return search(key) != nullptr;
+    return Search(key) != nullptr;
 }
 
 
@@ -251,7 +251,7 @@ bool HashTable::contains(const string& key) const {
 // Rehash
 // ============================================================
 
-void HashTable::rehash() {
+void HashTable::Rehash() {
 
     // --------------------------------------------------------
     // 1. Tính capacity mới
@@ -343,7 +343,7 @@ void HashTable::rehash() {
 // Clear
 // ============================================================
 
-void HashTable::clear() {
+void HashTable::Clear() {
 
     for (size_t i = 0; i < capacity; i++) {
 
@@ -370,7 +370,7 @@ void HashTable::clear() {
 // Size
 // ============================================================
 
-size_t HashTable::size() const {
+size_t HashTable::Size() const {
 
     return sizeCount;
 }
@@ -380,7 +380,7 @@ size_t HashTable::size() const {
 // Is Empty
 // ============================================================
 
-bool HashTable::isEmpty() const {
+bool HashTable::IsEmpty() const {
 
     return sizeCount == 0;
 }
@@ -390,7 +390,7 @@ bool HashTable::isEmpty() const {
 // Get Capacity
 // ============================================================
 
-size_t HashTable::getCapacity() const {
+size_t HashTable::GetCapacity() const {
 
     return capacity;
 }

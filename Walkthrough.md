@@ -21,6 +21,7 @@ PBL2/
 ├── src/                 # Mã nguồn ứng dụng chính
 │   └── Main.cpp         # Điểm khởi chạy chương trình (Entry Point)
 ├── Data/                # Thư mục lưu trữ cơ sở dữ liệu cục bộ (.csv)
+├── build.bat            # Kịch bản tự động biên dịch và khởi chạy dự án
 ├── Idea.md              # Tài liệu phân tích yêu cầu & thiết kế tính năng
 └── Walkthrough.md       # Báo cáo tổng kết tiến độ và kiến trúc kỹ thuật
 ```

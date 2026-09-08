@@ -24,8 +24,8 @@ private:
     size_t sizeCount;           // Số lượng phần tử hiện tại
     float loadFactorThreshold;  // Ngưỡng quá tải để Rehash
 
-    size_t hashFunction(const string& key) const;
-    void rehash();
+    size_t HashFunction(const string& key) const;
+    void Rehash();
 
 public:
     // Khởi tạo & Hủy
@@ -34,22 +34,25 @@ public:
 
     HashTable(const HashTable&) = delete;
     HashTable& operator=(const HashTable&) = delete;
-    // Thao tác dữ liệu cốt lõi
-    void insert(const string& key, const any& value);
-    bool remove(const string& key);
-    any* search(const string& key);
-    const any* search(const string& key) const;
-    bool contains(const string& key) const;
-    void clear();
+
+    // Thao tác dữ liệu cốt lõi (Chuẩn PascalCase)
+    void Insert(const string& key, const any& value);
+    bool Remove(const string& key);
+    any* Search(const string& key);
+    const any* Search(const string& key) const;
+    bool Contains(const string& key) const;
+    void Clear();
+
     // Thuộc tính & Trạng thái
-    size_t size() const;
-    bool isEmpty() const;
-    size_t getCapacity() const;
+    size_t Size() const;
+    bool IsEmpty() const;
+    size_t GetCapacity() const;
+
     // 🌟 Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
     template <typename T>
-    T* get(const string& key) {
-        any* val = search(key);
+    T* Get(const string& key) {
+        any* val = Search(key);
         if (val == nullptr) return nullptr;
         return any_cast<T>(val);
-    }    
+    }
 };
