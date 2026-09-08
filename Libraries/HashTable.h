@@ -31,6 +31,9 @@ public:
   // Khởi tạo & Hủy
     HashTable(size_t initCapacity = 101, float threshold = 0.75f);
     ~HashTable();
+
+HashTable(const HashTable&) = delete;
+HashTable& operator=(const HashTable&) = delete;
    // Thao tác dữ liệu cốt lõi
     void insert(const string& key, const any& value);
     bool remove(const string& key);
