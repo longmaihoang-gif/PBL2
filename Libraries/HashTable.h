@@ -28,24 +28,24 @@ private:
     void rehash();
 
 public:
-  // Khởi tạo & Hủy
+    // Khởi tạo & Hủy
     HashTable(size_t initCapacity = 101, float threshold = 0.75f);
     ~HashTable();
 
-HashTable(const HashTable&) = delete;
-HashTable& operator=(const HashTable&) = delete;
-   // Thao tác dữ liệu cốt lõi
+    HashTable(const HashTable&) = delete;
+    HashTable& operator=(const HashTable&) = delete;
+    // Thao tác dữ liệu cốt lõi
     void insert(const string& key, const any& value);
     bool remove(const string& key);
     any* search(const string& key);
     const any* search(const string& key) const;
     bool contains(const string& key) const;
     void clear();
- // Thuộc tính & Trạng thái
+    // Thuộc tính & Trạng thái
     size_t size() const;
     bool isEmpty() const;
     size_t getCapacity() const;
- // 🌟 Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
+    // 🌟 Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
     template <typename T>
     T* get(const string& key) {
         any* val = search(key);
