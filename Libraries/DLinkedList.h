@@ -4,25 +4,31 @@
 using namespace std;
 
 // =================================================================
-// 🧱 NODE: Nút danh sách liên kết đôi
+// NODE: Nút danh sách liên kết đôi
 // =================================================================
 struct Node {
     public:
         any value;
-        Node *p; // Con trỏ trỏ về nút trước (prev)
-        Node *n; // Con trỏ trỏ tới nút sau (next)
+        Node *prev; // Con trỏ trỏ về nút trước (prev)
+        Node *next; // Con trỏ trỏ tới nút sau (next)
 
-        Node(any val = any(), Node *prev = nullptr, Node *next = nullptr)
-            : value(val), p(prev), n(next) {}
+        Node(any val = any(), Node *prevNode = nullptr, Node *nextNode = nullptr)
+            : value(val), prev(prevNode), next(nextNode) {}
 
         ~Node() {}
 
         void Insert(Node *target);
         void Remove();
 
-        // 🌟 Chiêu thức bổ trợ: Ép kiểu nhanh giá trị (Trả về con trỏ, nullptr nếu sai kiểu)
+        // Ép kiểu nhanh giá trị (Trả về con trỏ, nullptr nếu sai kiểu)
         template <typename T>
-        T* Get() {
-            return any_cast<T>(&value);
-        }
+        T* Get();
 };
+
+// ============================================================
+// Triển khai Template đặt ở đáy file Header
+// ============================================================
+template <typename T>
+inline T* Node::Get() {
+    return any_cast<T>(&value);
+}

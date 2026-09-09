@@ -7,6 +7,7 @@
 class Wallet : public Entity {
     private:
         unsigned long long Balance;
+        unsigned long long Point;
 
     public:
         Wallet(unsigned long long initialBalance = 0) : Balance(initialBalance) {}

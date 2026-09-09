@@ -1,4 +1,4 @@
-# HỆ THỐNG QUẢN LÝ CỬA HÀNG & BÁN HÀNG
+# HỆ THỐNG QUẢN LÝ CỬA HÀNG & BÁN HÀNG ONLINE
 
 ---
 

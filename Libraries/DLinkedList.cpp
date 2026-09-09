@@ -13,20 +13,20 @@ void Node::Insert(Node* target) {
     // --------------------------------------------------------
     // 1. Lưu lại node phía sau hiện tại (nếu có)
     // --------------------------------------------------------
-    Node* oldNext = this->n;
+    Node* oldNext = this->next;
 
     // --------------------------------------------------------
     // 2. Nối node hiện tại với target
     // --------------------------------------------------------
-    this->n = target;
-    target->p = this;
+    this->next = target;
+    target->prev = this;
 
     // --------------------------------------------------------
     // 3. Nối target với node phía sau cũ
     // --------------------------------------------------------
-    target->n = oldNext;
+    target->next = oldNext;
     if (oldNext != nullptr) {
-        oldNext->p = target;
+        oldNext->prev = target;
     }
 }
 
@@ -39,20 +39,20 @@ void Node::Remove() {
     // --------------------------------------------------------
     // 1. Nối node phía trước với node phía sau
     // --------------------------------------------------------
-    if (this->p != nullptr) {
-        this->p->n = this->n;
+    if (this->prev != nullptr) {
+        this->prev->next = this->next;
     }
 
     // --------------------------------------------------------
     // 2. Nối node phía sau với node phía trước
     // --------------------------------------------------------
-    if (this->n != nullptr) {
-        this->n->p = this->p;
+    if (this->next != nullptr) {
+        this->next->prev = this->prev;
     }
 
     // --------------------------------------------------------
     // 3. Xóa sạch con trỏ liên kết của node hiện tại
     // --------------------------------------------------------
-    this->p = nullptr;
-    this->n = nullptr;
+    this->prev = nullptr;
+    this->next = nullptr;
 }

@@ -7,7 +7,7 @@ using namespace std;
 // Constructor
 // ============================================================
 
-HashTable::HashTable(size_t initCapacity, float threshold)
+HashTable::HashTable(int initCapacity, float threshold)
     : capacity(initCapacity),
       sizeCount(0),
       loadFactorThreshold(threshold)
@@ -29,7 +29,7 @@ HashTable::HashTable(size_t initCapacity, float threshold)
     buckets = new HashNode*[capacity];
 
     // Ban đầu tất cả bucket đều rỗng
-    for (size_t i = 0; i < capacity; i++) {
+    for (int i = 0; i < capacity; i++) {
         buckets[i] = nullptr;
     }
 }
@@ -50,12 +50,13 @@ HashTable::~HashTable() {
 // Hash Function - DJB2
 // ============================================================
 
-size_t HashTable::HashFunction(const string& key) const {
+int HashTable::HashFunction(const string& key) const {
 
     unsigned long hash = 5381;
 
-    for (unsigned char c : key) {
-        hash = ((hash << 5) + hash) + c;
+    for (int i = 0; i < key.length(); i++) {
+        unsigned char c = key[i];
+        hash = hash * 33 + c;
     }
 
     return hash % capacity;
@@ -72,7 +73,7 @@ void HashTable::Insert(const string& key, const any& value) {
     // 1. Kiểm tra key đã tồn tại chưa
     // --------------------------------------------------------
 
-    size_t index = HashFunction(key);
+    int index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -94,8 +95,7 @@ void HashTable::Insert(const string& key, const any& value) {
     // 2. Kiểm tra Load Factor
     // --------------------------------------------------------
 
-    float newLoadFactor =
-        static_cast<float>(sizeCount + 1) / capacity;
+    float newLoadFactor = (sizeCount + 1) * 1.0f / capacity;
 
     if (newLoadFactor > loadFactorThreshold) {
 
@@ -138,35 +138,12 @@ void HashTable::Insert(const string& key, const any& value) {
 
 
 // ============================================================
-// Search - phiên bản thường
+// Search
 // ============================================================
 
 any* HashTable::Search(const string& key) {
 
-    size_t index = HashFunction(key);
-
-    HashNode* current = buckets[index];
-
-    while (current != nullptr) {
-
-        if (current->key == key) {
-            return &current->value;
-        }
-
-        current = current->next;
-    }
-
-    return nullptr;
-}
-
-
-// ============================================================
-// Search - phiên bản const
-// ============================================================
-
-const any* HashTable::Search(const string& key) const {
-
-    size_t index = HashFunction(key);
+    int index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -189,7 +166,7 @@ const any* HashTable::Search(const string& key) const {
 
 bool HashTable::Remove(const string& key) {
 
-    size_t index = HashFunction(key);
+    int index = HashFunction(key);
 
     HashNode* current = buckets[index];
 
@@ -241,7 +218,7 @@ bool HashTable::Remove(const string& key) {
 // Contains
 // ============================================================
 
-bool HashTable::Contains(const string& key) const {
+bool HashTable::Contains(const string& key) {
 
     return Search(key) != nullptr;
 }
@@ -257,9 +234,9 @@ void HashTable::Rehash() {
     // 1. Tính capacity mới
     // --------------------------------------------------------
 
-    size_t oldCapacity = capacity;
+    int oldCapacity = capacity;
 
-    size_t newCapacity =
+    int newCapacity =
         capacity * 2 + 1;
 
 
@@ -270,16 +247,19 @@ void HashTable::Rehash() {
     HashNode** newBuckets =
         new HashNode*[newCapacity];
 
-    for (size_t i = 0; i < newCapacity; i++) {
+    for (int i = 0; i < newCapacity; i++) {
         newBuckets[i] = nullptr;
     }
+
+    // Cập nhật capacity mới trước để tái sử dụng hàm HashFunction
+    capacity = newCapacity;
 
 
     // --------------------------------------------------------
     // 3. Chuyển tất cả node sang bucket mới
     // --------------------------------------------------------
 
-    for (size_t i = 0; i < oldCapacity; i++) {
+    for (int i = 0; i < oldCapacity; i++) {
 
         HashNode* current = buckets[i];
 
@@ -290,17 +270,10 @@ void HashTable::Rehash() {
 
 
             // ------------------------------------------------
-            // Tính hash theo capacity mới
+            // Tính vị trí mới bằng HashFunction
             // ------------------------------------------------
 
-            unsigned long hash = 5381;
-
-            for (unsigned char c : current->key) {
-                hash = ((hash << 5) + hash) + c;
-            }
-
-            size_t newIndex =
-                hash % newCapacity;
+            int newIndex = HashFunction(current->key);
 
 
             // ------------------------------------------------
@@ -331,11 +304,10 @@ void HashTable::Rehash() {
 
 
     // --------------------------------------------------------
-    // 5. Cập nhật HashTable
+    // 5. Cập nhật con trỏ buckets
     // --------------------------------------------------------
 
     buckets = newBuckets;
-    capacity = newCapacity;
 }
 
 
@@ -345,7 +317,7 @@ void HashTable::Rehash() {
 
 void HashTable::Clear() {
 
-    for (size_t i = 0; i < capacity; i++) {
+    for (int i = 0; i < capacity; i++) {
 
         HashNode* current = buckets[i];
 
@@ -370,8 +342,7 @@ void HashTable::Clear() {
 // Size
 // ============================================================
 
-size_t HashTable::Size() const {
-
+int HashTable::Size() const {
     return sizeCount;
 }
 
@@ -381,7 +352,6 @@ size_t HashTable::Size() const {
 // ============================================================
 
 bool HashTable::IsEmpty() const {
-
     return sizeCount == 0;
 }
 
@@ -390,7 +360,6 @@ bool HashTable::IsEmpty() const {
 // Get Capacity
 // ============================================================
 
-size_t HashTable::GetCapacity() const {
-
+int HashTable::GetCapacity() const {
     return capacity;
 }
