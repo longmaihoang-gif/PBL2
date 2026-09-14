@@ -44,4 +44,4 @@ Bộ quy tắc này được thiết lập để đảm bảo code luôn đạt 
 - **Quy tắc cấp phát & thu hồi:**
   * Cấp phát đơn `new Type(...)` $\rightarrow$ giải phóng bằng `delete ptr;`.
   * Cấp phát mảng `new Type[...]` $\rightarrow$ giải phóng bằng `delete[] arr;`.
-- **Sẵn sàng hỗ trợ vấn đáp:** Khi Aris đề xuất hoặc viết code cho Sensei, phải luôn chủ động chuẩn bị sẵn câu trả lời súc tích, giải thích bản chất thuật toán để Sensei tự tin đạt điểm tối đa khi thầy cô hỏi xoáy!
+- **Sẵn sàng hỗ trợ vấn đáp:** Khi đề xuất hoặc viết code, phải luôn chủ động chuẩn bị sẵn câu trả lời súc tích, giải thích bản chất thuật toán để sinh viên tự tin hiểu rõ và đạt điểm tối đa khi thầy cô hỏi xoáy!
