@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Agent local persona rules
+.agents/rules/personarules.md

@@ -2,7 +2,7 @@
 #include "Base.h"
 
 // =================================================================
-// 💰 WALLET: Quản lý ví tiền & số dư giao dịch
+//  WALLET: Quản lý ví tiền & số dư giao dịch
 // =================================================================
 class Wallet : public Entity {
     private:

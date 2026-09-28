@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <any>
-#include <cstddef>
 
 using namespace std;
 
@@ -16,7 +15,7 @@ struct HashNode {
         : key(k), value(v), next(nullptr), prev(nullptr) {}
 };
 
-// Bảng băm tự cài đặt 100%
+// Bảng băm tự cài đặt
 class HashTable {
 private:
     HashNode** buckets;         // Mảng con trỏ động chứa các danh sách liên kết
@@ -32,9 +31,6 @@ public:
     HashTable(int initCapacity = 101, float threshold = 0.75f);
     ~HashTable();
 
-    HashTable(const HashTable&) = delete;
-    HashTable& operator=(const HashTable&) = delete;
-
     // Thao tác dữ liệu cốt lõi (Chuẩn PascalCase)
     void Insert(const string& key, const any& value);
     bool Remove(const string& key);
@@ -47,7 +43,7 @@ public:
     bool IsEmpty() const;
     int GetCapacity() const;
 
-    // 🌟 Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
+    // Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
     template <typename T>
     T* Get(const string& key);
 };

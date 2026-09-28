@@ -6,7 +6,7 @@
 using namespace std;
 
 // =================================================================
-// 📦 ITEM: Cấu trúc thông tin vật phẩm đơn lẻ
+//  ITEM: Cấu trúc thông tin vật phẩm đơn lẻ
 // =================================================================
 struct Item {
     string ItemID;
@@ -17,7 +17,7 @@ struct Item {
 };
 
 // =================================================================
-// 🛒 SHOP ITEM: Món hàng được bày bán trong Shop (Kế thừa Entity)
+//  SHOP ITEM: Món hàng được bày bán trong Shop (Kế thừa Entity)
 // =================================================================
 class ShopItem : public Entity {
     public:
@@ -33,7 +33,7 @@ class ShopItem : public Entity {
 };
 
 // =================================================================
-// 🏪 SHOP SHELF: Kệ hàng / Quầy trưng bày vật phẩm (Kế thừa Entity)
+//  SHOP SHELF: Kệ hàng / Quầy trưng bày vật phẩm (Kế thừa Entity)
 // =================================================================
 class ShopShelf : public Entity {
     public:

@@ -7,7 +7,7 @@
 using namespace std;
 
 // =================================================================
-// 🛡️ ROLE: Phân quyền tài khoản hệ thống
+//  ROLE: Phân quyền tài khoản hệ thống
 // =================================================================
 enum Role {
     Admin = 0,
@@ -15,14 +15,14 @@ enum Role {
 };
 
 // =================================================================
-// 👤 ACCOUNT: Thực thể tài khoản người dùng / quản trị viên
+//  ACCOUNT: Thực thể tài khoản người dùng / quản trị viên
 // =================================================================
 class Account : public Entity {
     private:
         inline static long long GUID = 1000;
         long long UID;
         Role Permission;
-        Wallet UserWallet; // 💰 Ví tiền giao dịch
+        Wallet UserWallet; //  Ví tiền giao dịch
 
     public:
         // Constructor tạo tài khoản mới (tự động cấp UID tăng dần)
