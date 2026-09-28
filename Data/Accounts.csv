@@ -1,0 +1,4 @@
+UID,Username,Password,FullName,Role,Balance
+1001,admin,admin123,Quan Tri Vien,0,1000000
+1002,nhanvien1,123456,Tran Van B,1,200000
+1003,khachhang1,123456,Nguyen Van A,1,500000

@@ -1,0 +1,9 @@
+ProductID,ProductName,Category,Price,Quantity,Description,ManufactureDate,ExpiryDate,WarrantyMonths,PowerWatts
+FOOD-001,Sua Tuoi Vinamilk,Food,35000,25,"Sua tuoi tiet trung 100%, bo sung vitamin D",2024-01-10,2024-07-10,0,0
+FOOD-002,Banh Mi Sandwich,Food,15000,4,"Banh mi tuoi an lien, mem xop",2024-03-01,2024-03-10,0,0
+FOOD-003,Trung Ga Ba Huan,Food,30000,50,"Hop 10 qua, chuan VietGAP",2024-02-20,2024-04-20,0,0
+FOOD-004,Gao ST25,Food,180000,12,"Gao thom dac san, tui 5kg",2024-01-05,2025-01-05,0,0
+ELEC-001,Noi Com Dien Sunhouse,Electronics,450000,8,"Long noi chong dinh cao cap, dung tich 1.8L",-,-,12,700
+ELEC-002,Quat Dung Senko,Electronics,320000,3,"3 toc do gio, tiet kiem dien nang",-,-,24,45
+ELEC-003,Am Dun Sieu Toc,Electronics,180000,15,"Than inox 304 khong gi, tu ngat khi soi",-,-,6,1500
+ELEC-004,May Say Toc Philips,Electronics,250000,6,"2 che do say nong lanh, cong suat manh",-,-,12,1200

@@ -2,38 +2,12 @@
 #include <string>
 #include <vector>
 #include "Base.h"
+#include "Item.h"
 
 using namespace std;
 
 // =================================================================
-//  ITEM: Cấu trúc thông tin vật phẩm đơn lẻ
-// =================================================================
-struct Item {
-    string ItemID;
-    int Count;
-
-    Item(string id = "", int count = 0) : ItemID(id), Count(count) {}
-    ~Item() {}
-};
-
-// =================================================================
-//  SHOP ITEM: Món hàng được bày bán trong Shop (Kế thừa Entity)
-// =================================================================
-class ShopItem : public Entity {
-    public:
-        vector<Item> Items;
-        long long Price;
-        int QuantityRemaining;
-        string Description;
-
-        ShopItem();
-        virtual ~ShopItem();
-
-        void AddItem(string itemID, int count);
-};
-
-// =================================================================
-//  SHOP SHELF: Kệ hàng / Quầy trưng bày vật phẩm (Kế thừa Entity)
+//  SHOP SHELF: Ke hang / Quay trung bay vat pham (Ke thua Entity)
 // =================================================================
 class ShopShelf : public Entity {
     public:
@@ -43,6 +17,9 @@ class ShopShelf : public Entity {
         virtual ~ShopShelf() {}
 };
 
+// =================================================================
+//  SHOP: Cua hang tong the chua cac quay ke (Ke thua Entity)
+// =================================================================
 class Shop : public Entity {
     public:
         vector<ShopShelf> Shelfs;
@@ -50,4 +27,3 @@ class Shop : public Entity {
         Shop() {}
         virtual ~Shop() {}
 };
-

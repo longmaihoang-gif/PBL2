@@ -13,14 +13,20 @@ PBL2/
 │   ├── Base.h           # Lớp cơ sở Entity cho mô hình hướng đối tượng
 │   ├── Trade.h          # Quản lý ví tiền (Wallet) & giao dịch
 │   ├── Account.h        # Thực thể tài khoản người dùng & phân quyền (Role)
-│   ├── Shop.h           # Quản lý vật phẩm, kệ hàng và cửa hàng
+│   ├── Item.h           # Phân cấp kế thừa hàng hóa: Item, ShopItem, FoodItem, ElectronicItem
+│   ├── Shop.h           # Quản lý quầy kệ (ShopShelf) và cửa hàng (Shop)
 │   ├── HashTable.h      # Khung khai báo Bảng băm (Hash Table)
 │   ├── Hashtable.cpp    # Hiện thực chi tiết 100% giải thuật Bảng băm
 │   ├── DLinkedList.h    # Khung khai báo Nút danh sách liên kết đôi (Node)
-│   └── DLinkedList.cpp  # Hiện thực chi tiết thao tác chèn/xóa liên kết đôi
+│   ├── DLinkedList.cpp  # Hiện thực chi tiết thao tác chèn/xóa liên kết đôi
+│   ├── DataManager.h    # Khai báo module bóc tách CSV và đồng bộ dữ liệu
+│   └── DataManager.cpp  # Hiện thực chi tiết đọc/ghi CSV chuẩn RFC 4180
 ├── src/                 # Mã nguồn ứng dụng chính
 │   └── Main.cpp         # Điểm khởi chạy chương trình (Entry Point)
 ├── Data/                # Thư mục lưu trữ cơ sở dữ liệu cục bộ (.csv)
+│   ├── Accounts.csv     # Cơ sở dữ liệu tài khoản
+│   ├── Products.csv     # Cơ sở dữ liệu danh mục hàng hóa
+│   └── Orders.csv       # Cơ sở dữ liệu lịch sử đơn hàng
 ├── build.bat            # Kịch bản tự động biên dịch và khởi chạy dự án
 ├── Idea.md              # Tài liệu phân tích yêu cầu & thiết kế tính năng
 └── Walkthrough.md       # Báo cáo tổng kết tiến độ và kiến trúc kỹ thuật
