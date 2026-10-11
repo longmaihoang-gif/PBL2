@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <memory>
 #include <fstream>
 #include <sstream>
 #include "Account.h"
@@ -47,9 +46,9 @@ public:
     // =============================================================
     // Quan ly San pham & Kho hang (Products)
     // =============================================================
-    static bool LoadProducts(const string &filePath, vector<shared_ptr<ShopItem>> &productList);
-    static bool SaveProducts(const string &filePath, const vector<shared_ptr<ShopItem>> &productList);
-    static bool LoadProductsToTable(const string &filePath, HashTable &productTable, vector<shared_ptr<ShopItem>> &productList);
+    static bool LoadProducts(const string &filePath, vector<ShopItem*> &productList);
+    static bool SaveProducts(const string &filePath, const vector<ShopItem*> &productList);
+    static bool LoadProductsToTable(const string &filePath, HashTable &productTable, vector<ShopItem*> &productList);
 
     // =============================================================
     // Quan ly Hoa don & Doanh thu (Orders)

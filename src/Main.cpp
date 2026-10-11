@@ -18,6 +18,7 @@
 #include "../Libraries/HashTable.h"
 #include "../Libraries/DLinkedList.h"
 #include "../Libraries/DataManager.h"
+#include "../Libraries/Cart.h"
 
 using namespace std;
 
@@ -35,7 +36,7 @@ int main() {
     HashTable accountTable;
     HashTable productTable;
     vector<Account> accountList;
-    vector<shared_ptr<ShopItem>> productList;
+    vector<ShopItem*> productList;
     vector<OrderRecord> orderList;
 
     // 2. Nap du lieu tu cac tep CSV
@@ -59,30 +60,79 @@ int main() {
         cout << "  -> [Canh bao] Khong the mo hoac nap Data/Orders.csv\n";
     }
 
-    cout << "\n------------------------------------------------------------\n";
-    cout << "DANH SACH SAN PHAM TRONG KHO (NAP TU CSV):\n";
-    cout << "------------------------------------------------------------\n";
+    // 3. Kiem thu Module Gio hang (Cart) & Co che Hoan tac (Undo LIFO)
+    cout << "\n============================================================\n";
+    cout << "   KIEM THU MODULE GIO HANG & CO CHE HOAN TAC (UNDO)\n";
+    cout << "============================================================\n";
 
-    for (int i = 0; i < (int)productList.size(); i++) {
-        const auto &item = productList[i];
-        cout << "[" << item->ProductID << "] " << item->Name 
-             << " | Gia: " << item->Price << " VND"
-             << " | Ton kho: " << item->QuantityRemaining
-             << " | Mo ta: " << item->Description << "\n";
+    Cart myCart("Nguyen Van A");
 
-        shared_ptr<FoodItem> food = dynamic_pointer_cast<FoodItem>(item);
-        if (food) {
-            cout << "      (Thuc pham - NSX: " << food->ManufactureDate 
-                 << " | HSD: " << food->ExpiryDate << ")\n";
+    if (productList.size() >= 4) {
+        cout << "\n[BUOC 1] Thuc hien them san pham vao gio hang:\n";
+        cout << "  - Ton kho ban dau " << productList[0]->Name << ": " << productList[0]->QuantityRemaining << "\n";
+        cout << "  - Ton kho ban dau " << productList[1]->Name << ": " << productList[1]->QuantityRemaining << "\n";
+        cout << "  - Ton kho ban dau " << productList[3]->Name << ": " << productList[3]->QuantityRemaining << "\n";
+
+        // Them san pham hop le
+        myCart.AddItem(productList[0], 2); // 2 Banh mi
+        myCart.AddItem(productList[1], 3); // 3 Coca Cola
+        myCart.AddItem(productList[3], 1); // 1 Chuot Logitech
+
+        cout << "\n  -> Da them 3 mat hang vao gio hang!\n";
+        cout << "  - Ton kho sau khi them:\n";
+        cout << "    + " << productList[0]->Name << ": " << productList[0]->QuantityRemaining << "\n";
+        cout << "    + " << productList[1]->Name << ": " << productList[1]->QuantityRemaining << "\n";
+        cout << "    + " << productList[3]->Name << ": " << productList[3]->QuantityRemaining << "\n";
+
+        // Thu them vuot qua so luong ton kho
+        cout << "\n  [Kiem tra vuot ton kho] Thu them 999 Chuot Logitech...\n";
+        bool overLimitResult = myCart.AddItem(productList[3], 999);
+        cout << "  -> Ket qua them 999 mon: " << (overLimitResult ? "THANH CONG" : "THAT BAI (Dung nhu ky vong)") << "\n";
+
+        // In gio hang hien tai
+        myCart.PrintCart();
+
+        // [BUOC 2] Thuc hien Undo lan 1
+        cout << "\n[BUOC 2] Thuc hien Undo thao tac them gan nhat (LIFO):\n";
+        CartItem undoneItem;
+        if (myCart.Undo(productTable, undoneItem)) {
+            cout << "  -> [UNDO THANH CONG] Da rut khoi gio: [" << undoneItem.ProductID 
+                 << "] " << undoneItem.ProductName << " | So luong hoan tra: " << undoneItem.Quantity << "\n";
+            cout << "  -> Ton kho san pham [" << undoneItem.ProductID << "] sau khi Undo: " 
+                 << productList[3]->QuantityRemaining << " (Da phuc hoi nguyen trang)\n";
         }
+        myCart.PrintCart();
 
-        shared_ptr<ElectronicItem> elec = dynamic_pointer_cast<ElectronicItem>(item);
-        if (elec) {
-            cout << "      (Dien may - Bao hanh: " << elec->WarrantyMonths 
-                 << " thang | Cong suat: " << elec->PowerWatts << "W)\n";
+        // [BUOC 3] Thuc hien Undo lan 2
+        cout << "\n[BUOC 3] Thuc hien Undo tiep mot lan nua:\n";
+        if (myCart.Undo(productTable, undoneItem)) {
+            cout << "  -> [UNDO THANH CONG] Da rut khoi gio: [" << undoneItem.ProductID 
+                 << "] " << undoneItem.ProductName << " | So luong hoan tra: " << undoneItem.Quantity << "\n";
+            cout << "  -> Ton kho san pham [" << undoneItem.ProductID << "] sau khi Undo: " 
+                 << productList[1]->QuantityRemaining << " (Da phuc hoi nguyen trang)\n";
         }
+        myCart.PrintCart();
+
+        // [BUOC 4] Them mat hang moi sau khi Undo de kiem tra tinh toan ven lien ket
+        cout << "\n[BUOC 4] Them mat hang moi sau cac thao tac Undo:\n";
+        myCart.AddItem(productList[2], 1); // 1 Sua tuoi Vinamilk
+        myCart.PrintCart();
+
+        cout << "Chuoi tom tat don hang de ghi CSV:\n\"" << myCart.GetItemsSummary() << "\"\n";
+
+        // [BUOC 5] Huy gio hang va phuc hoi toan bo ton kho
+        cout << "\n[BUOC 5] Thu nghiem huy gio hang (Clear va hoan tra toan bo ton kho):\n";
+        myCart.Clear(&productTable);
+        cout << "  -> Gio hang sau khi Clear: " << (myCart.IsEmpty() ? "RONG (Dung ky vong)" : "CHUA RONG") << "\n";
+        cout << "  -> Ton kho " << productList[0]->Name << " sau khi Clear: " << productList[0]->QuantityRemaining << " (Da hoan tra du)\n";
     }
 
-    cout << "\n[INFO] He thong khoi dong hoan tat va san sang hoat dong!\n";
+    // 4. Thu hoi bo nho dong cho danh muc san pham tren Heap
+    for (int i = 0; i < (int)productList.size(); i++) {
+        delete productList[i];
+    }
+    productList.clear();
+
+    cout << "\n[INFO] Hoan tat toan bo kiem thu Module Cart & Undo. He thong san sang cho Quest 2 (Menu CLI)!\n";
     return 0;
 }

@@ -70,15 +70,34 @@ PBL2/
 
 ---
 
-### 4. Tích Hợp Chương Trình Chính (`src/Main.cpp`)
+### 4. Module Quản Lý Dữ Liệu Bền Vững (`DataManager`)
+- **Mục đích:** Xử lý đọc/ghi cơ sở dữ liệu dạng bảng phẳng `.csv` (`Accounts.csv`, `Products.csv`, `Orders.csv`).
+- **Chuẩn hóa RFC 4180:** Xử lý chuỗi có chứa dấu phẩy, ngắt dòng và dấu ngoặc kép an toàn.
+- **Quản lý đa hình thân thiện sinh viên:** Sử dụng con trỏ thô lớp cơ sở `ShopItem*` kết hợp cấp phát động `new FoodItem(...)` / `new ElectronicItem(...)` và ép kiểu an toàn `dynamic_cast`. Thu hồi bộ nhớ rõ ràng bằng `delete` ở cuối chương trình, không lạm dụng các thư viện thông minh phức tạp để đảm bảo tính tường minh khi bảo vệ vấn đáp.
+- **Tích hợp nạp tự động:** Nạp dữ liệu tài khoản và hàng hóa đa hình trực tiếp vào `HashTable` với thời gian tra cứu $O(1)$.
+- **Ghi nhận lịch sử đơn hàng:** Hỗ trợ phương thức `AppendOrder` ghi bổ sung đơn hàng vào `Orders.csv`.
+
+---
+
+### 5. Module Giỏ Hàng & Cơ Chế Hoàn Tác (`Cart` & `Undo`)
+- **Kế thừa Thực thể Hướng đối tượng:** `Cart` kế thừa từ `Entity`, tích hợp sẵn thuộc tính `Name` (định danh giỏ hàng/khách hàng) và thẻ trạng thái `Tags`.
+- **Ứng dụng Danh sách liên kết đôi (`DLinkedList / Node`):**
+  - Quản lý danh sách các món mua bằng con trỏ `head` và `tail`.
+  - Cơ chế **Soft Reservation**: Tự động trừ tạm thời tồn kho `QuantityRemaining` trong bộ nhớ khi thêm món vào giỏ, ngăn chặn bán vượt số lượng.
+  - Cơ chế **Undo LIFO**: Sử dụng con trỏ `tail` làm đỉnh ngăn xếp. Khi người dùng hoàn tác, hệ thống rút node ở `tail` trong $O(1)$, thu hồi bộ nhớ bằng `delete` và tự động cộng hoàn trả lại số lượng tồn kho vào `HashTable`.
+  - **Hủy giỏ hàng an toàn (`Clear`):** Hỗ trợ tùy chọn hoàn trả toàn bộ tồn kho cho kho hàng nếu khách hàng hủy đơn trước khi thanh toán.
+  - **Tiện ích:** Cung cấp hàm `GetTotalAmount()`, `PrintCart()` định dạng bảng trực quan, và `GetItemsSummary()` phục vụ lưu vết hóa đơn.
+
+---
+
+### 6. Tích Hợp Chương Trình Chính (`src/Main.cpp`)
 - Đã liên kết đầy đủ toàn bộ các thư viện nội bộ của dự án.
-- Chuẩn hóa các header C++17 tiêu chuẩn (`<iostream>`, `<string>`, `<vector>`, `<any>`), đảm bảo tính tương thích đa nền tảng (Cross-Platform) với mọi trình biên dịch (GCC/MinGW, MSVC, Clang).
-- Chuẩn bị sẵn khung hàm `main()` để triển khai luồng nghiệp vụ và giao diện điều khiển (CLI).
+- Tự động nạp dữ liệu từ thư mục `Data/` vào `HashTable`.
+- Tích hợp kịch bản kiểm thử toàn diện cho `Cart` và `Undo` (thêm món, kiểm tra vượt tồn kho, Undo lần 1, Undo lần 2, thêm món mới và giải phóng bộ nhớ).
 
 ---
 
 ## 🎯 III. Kế Hoạch Tiếp Theo
-1. Xây dựng module đọc/ghi dữ liệu từ các tệp `.csv` trong thư mục `Data/` (`Accounts.csv`, `Products.csv`, `Orders.csv`).
-2. Hiện thực logic giỏ hàng (Cart) và cơ chế Undo đơn hàng sử dụng `DLinkedList`.
-3. Thiết kế menu giao diện dòng lệnh (CLI) phân quyền theo phiên đăng nhập của `Admin` và `User`.
-4. Hoàn thiện tính năng xuất hóa đơn bán lẻ dạng file `.txt`.
+1. Thiết kế menu giao diện dòng lệnh (CLI) tương tác trực tiếp, phân quyền theo phiên đăng nhập của `Admin` và `User`.
+2. Hoàn thiện tính năng thanh toán (trừ số dư ví tiền `Wallet`, chốt đơn vào `Orders.csv`, cập nhật tồn kho `Products.csv`).
+3. Xuất hóa đơn bán lẻ dạng file `.txt` mô phỏng hóa đơn in nhiệt tại quầy.

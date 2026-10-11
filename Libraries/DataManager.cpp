@@ -142,10 +142,14 @@ bool DataManager::LoadAccountsToTable(const string &filePath, HashTable &account
 // =================================================================
 //  Doc danh muc san pham tu CSV (Ho tro da hinh FoodItem & ElectronicItem)
 // =================================================================
-bool DataManager::LoadProducts(const string &filePath, vector<shared_ptr<ShopItem>> &productList) {
+bool DataManager::LoadProducts(const string &filePath, vector<ShopItem*> &productList) {
     ifstream inFile(filePath);
     if (!inFile.is_open()) return false;
 
+    // Giai phong bo nho cu neu danh sach da co phan tu
+    for (int i = 0; i < (int)productList.size(); i++) {
+        delete productList[i];
+    }
     productList.clear();
     string line;
 
@@ -171,13 +175,13 @@ bool DataManager::LoadProducts(const string &filePath, vector<shared_ptr<ShopIte
             int warranty = stoi(tokens[8]);
             int power = stoi(tokens[9]);
 
-            // Phan loai da hinh dua tren category hoac tien to ma dinh danh
+            // Phan loai da hinh bang cap phat dong new truyen thong
             if (category == "Food" || id.rfind("FOOD-", 0) == 0) {
-                productList.push_back(make_shared<FoodItem>(id, name, price, qty, desc, nsx, hsd));
+                productList.push_back(new FoodItem(id, name, price, qty, desc, nsx, hsd));
             } else if (category == "Electronics" || id.rfind("ELEC-", 0) == 0) {
-                productList.push_back(make_shared<ElectronicItem>(id, name, price, qty, desc, warranty, power));
+                productList.push_back(new ElectronicItem(id, name, price, qty, desc, warranty, power));
             } else {
-                productList.push_back(make_shared<ShopItem>(id, name, category, price, qty, desc));
+                productList.push_back(new ShopItem(id, name, category, price, qty, desc));
             }
         }
     }
@@ -189,7 +193,7 @@ bool DataManager::LoadProducts(const string &filePath, vector<shared_ptr<ShopIte
 // =================================================================
 //  Ghi danh muc san pham xuong CSV
 // =================================================================
-bool DataManager::SaveProducts(const string &filePath, const vector<shared_ptr<ShopItem>> &productList) {
+bool DataManager::SaveProducts(const string &filePath, const vector<ShopItem*> &productList) {
     ofstream outFile(filePath);
     if (!outFile.is_open()) return false;
 
@@ -198,8 +202,8 @@ bool DataManager::SaveProducts(const string &filePath, const vector<shared_ptr<S
 
     int count = (int)productList.size();
     for (int i = 0; i < count; i++) {
-        const shared_ptr<ShopItem> &item = productList[i];
-        if (!item) continue;
+        const ShopItem* item = productList[i];
+        if (item == nullptr) continue;
 
         outFile << EscapeCSV(item->ProductID) << ","
                 << EscapeCSV(item->Name) << ","
@@ -208,14 +212,14 @@ bool DataManager::SaveProducts(const string &filePath, const vector<shared_ptr<S
                 << item->QuantityRemaining << ","
                 << EscapeCSV(item->Description) << ",";
 
-        // Kiem tra kieu da hinh de ghi cac thuoc tinh dac thu
-        shared_ptr<FoodItem> food = dynamic_pointer_cast<FoodItem>(item);
-        shared_ptr<ElectronicItem> elec = dynamic_pointer_cast<ElectronicItem>(item);
+        // Kiem tra kieu da hinh bang dynamic_cast truyen thong
+        const FoodItem* food = dynamic_cast<const FoodItem*>(item);
+        const ElectronicItem* elec = dynamic_cast<const ElectronicItem*>(item);
 
-        if (food) {
+        if (food != nullptr) {
             outFile << EscapeCSV(food->ManufactureDate) << ","
                     << EscapeCSV(food->ExpiryDate) << ",0,0\n";
-        } else if (elec) {
+        } else if (elec != nullptr) {
             outFile << "-,-," << elec->WarrantyMonths << "," << elec->PowerWatts << "\n";
         } else {
             outFile << "-,-,0,0\n";
@@ -229,7 +233,7 @@ bool DataManager::SaveProducts(const string &filePath, const vector<shared_ptr<S
 // =================================================================
 //  Nap san pham vao Bang bam (HashTable)
 // =================================================================
-bool DataManager::LoadProductsToTable(const string &filePath, HashTable &productTable, vector<shared_ptr<ShopItem>> &productList) {
+bool DataManager::LoadProductsToTable(const string &filePath, HashTable &productTable, vector<ShopItem*> &productList) {
     if (!LoadProducts(filePath, productList)) return false;
 
     int count = (int)productList.size();
