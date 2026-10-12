@@ -12,6 +12,33 @@ Bộ quy tắc này được thiết lập để đảm bảo code luôn đạt 
 ### 1. Triết lý Cốt lõi: "KISS" (Keep It Simple & Student-friendly)
 - **Ưu tiên sự tường minh:** Code viết ra phải để một sinh viên năm 2 nhìn vào hiểu ngay và tự tin giải thích được 100% từng dòng lệnh trước hội đồng chấm thi.
 - **Không "Hack não" & Không "Hàn lâm hóa":** Tuyệt đối không tự ý áp dụng các kỹ thuật cao siêu của senior/dev lâu năm (như mẹo dịch bit, template quá phức tạp, ép xung phần cứng...) nếu cách viết cơ bản đã đáp ứng tốt yêu cầu.
+- **Nguyên tắc trần kiến thức năm 2 (Year-2 Knowledge Ceiling):** Mọi cú pháp, hàm hay thư viện vượt quá phạm vi hai môn học *"Lập trình hướng đối tượng"* và *"Cấu trúc Dữ liệu"* đều bị nghiêm cấm. Nếu cần một chức năng (tìm kiếm, sắp xếp, lọc, băm), phải tự viết bằng vòng lặp và câu lệnh rẽ nhánh cơ bản.
+
+---
+
+### 2. Danh Sách Trắng Thư Viện (Strict Whitelist - Mọi thứ nằm ngoài đều bị CẤM)
+Để ngăn ngừa tuyệt đối việc phát sinh các thư viện lạ gây bẫy vấn đáp, toàn bộ dự án tuân thủ cơ chế **Default-Deny** (Mặc định cấm, chỉ được dùng những gì có trong danh sách trắng dưới đây):
+
+1. **Thư viện C++ tiêu chuẩn (STL Whitelist) - CHỈ CHO PHÉP:**
+   - `<iostream>`: Nhập/xuất console cơ bản (`cin`, `cout`).
+   - `<fstream>`: Đọc/ghi tập tin văn bản (`ifstream`, `ofstream`).
+   - `<sstream>`: Tách chuỗi và định dạng chuỗi (`stringstream`).
+   - `<string>`: Xử lý chuỗi và hàm ép kiểu cơ bản (`to_string`, `stoi`, `stoll`, `stoull`).
+   - `<vector>`: Mảng động phục vụ lưu danh sách tạm hoặc bảng dữ liệu CSV.
+   - `<iomanip>`: Căn lề console cơ bản nếu cần hiển thị bảng (`setw`, `setfill`, `left`, `right`).
+   - `<cmath>`, `<cstdlib>`, `<ctime>`: Các hàm toán học, sinh số ngẫu nhiên thời gian thực cơ bản.
+   - **CẤM TUYỆT ĐỐI MỌI HEADER STL KHÁC:**
+     * Cấm `<algorithm>`: Tuyệt đối không dùng `std::for_each`, `std::find_if`, `std::transform`, `std::remove_if`... Mọi thao tác tìm kiếm, lọc, duyệt phải tự viết bằng vòng lặp `for` hoặc `while` cơ bản.
+     * Cấm `<memory>`: Không dùng smart pointer (`shared_ptr`, `unique_ptr`).
+     * Cấm `<regex>`, `<filesystem>`, `<chrono>`, `<ranges>`, `<functional>`, `<optional>`, `<variant>`, `<tuple>`, `<thread>`.
+
+2. **Cấu trúc Dữ liệu Đồ án (DSA Whitelist):**
+   - CẤM các container STL có sẵn thay thế cấu trúc dữ liệu bài tập lớn: Cấm `std::map`, `std::unordered_map`, `std::unordered_set`, `std::list`, `std::stack`, `std::queue`.
+   - Các cấu trúc dữ liệu cốt lõi (Bảng băm `HashTable`, Danh sách liên kết đôi `DLinkedList`) bắt buộc phải tự lập trình thủ công bằng con trỏ thuần (`Type*`).
+
+3. **Thư viện bên ngoài (Third-party GUI Whitelist):**
+   - Chỉ cho phép đúng 2 thư viện phục vụ đồ họa đã thống nhất: **Dear ImGui** và **GLFW / OpenGL3**.
+   - CẤM thêm bất kỳ thư viện bên thứ 3 nào khác (không dùng Boost, nlohmann/json, spdlog, fmt...). Mọi thao tác định dạng CSV hay dữ liệu đều xử lý bằng mã C++ cơ bản tự viết.
 
 ---
 
@@ -40,8 +67,20 @@ Bộ quy tắc này được thiết lập để đảm bảo code luôn đạt 
 
 ---
 
-### 5. Quản lý Bộ nhớ & Trách nhiệm Giải trình
+### 5. Xử lý Tập tin (File I/O) & Tuyệt đối Tránh Cú pháp Lạ (Standard Library Quirks)
+- **Chuẩn hóa thao tác Đọc / Ghi:**
+  * Đọc file: Dùng `ifstream inFile(path);` và `getline(inFile, line);`, kiểm tra bằng `if (!inFile.is_open())`.
+  * Ghi file: Dùng `ofstream outFile(path);` (ghi đè) hoặc `ofstream outFile(path, ios::app);` (ghi nối tiếp).
+  * Giả định cấu trúc dữ liệu tệp: Các tệp CSV trong thư mục `Data/` luôn được giả định đã có sẵn dòng tiêu đề (Header). Không tự ý chèn logic kiểm tra tệp rỗng bằng mẹo lạ (`peek()`, `traits_type::eof()`, hoặc mở `ifstream` lồng trong hàm ghi file).
+- **Cấm các phương thức chuỗi & STL lạ lùng:**
+  * Không dùng `rfind("...", 0) == 0` để kiểm tra tiền tố (Prefix). Ưu tiên so sánh thuộc tính rõ ràng (ví dụ: `category == "Food"`), hoặc viết hàm con/vòng lặp so sánh ký tự tường minh.
+  * Không lạm dụng `std::regex` cho các tác vụ tách chuỗi cơ bản; ưu tiên `stringstream` hoặc duyệt mảng ký tự truyền thống.
+  * Tuyệt đối không dùng con trỏ thông minh (`std::shared_ptr`, `std::unique_ptr`) trong các module yêu cầu tự quản lý bộ nhớ, chỉ dùng con trỏ cơ bản (`Type*`).
+
+---
+
+### 6. Quản lý Bộ nhớ & Trách nhiệm Giải trình
 - **Quy tắc cấp phát & thu hồi:**
-  * Cấp phát đơn `new Type(...)` $\rightarrow$ giải phóng bằng `delete ptr;`.
-  * Cấp phát mảng `new Type[...]` $\rightarrow$ giải phóng bằng `delete[] arr;`.
+  * Cấp phát đơn `new Type(...)` -> giải phóng bằng `delete ptr;`.
+  * Cấp phát mảng `new Type[...]` -> giải phóng bằng `delete[] arr;`.
 - **Sẵn sàng hỗ trợ vấn đáp:** Khi đề xuất hoặc viết code, phải luôn chủ động chuẩn bị sẵn câu trả lời súc tích, giải thích bản chất thuật toán để sinh viên tự tin hiểu rõ và đạt điểm tối đa khi thầy cô hỏi xoáy!

@@ -41,7 +41,7 @@ public:
     // =============================================================
     static bool ReadCSV(const string &filePath, vector<vector<string>> &rows, bool skipHeader = true);
     static bool WriteCSV(const string &filePath, const string &header, const vector<vector<string>> &rows);
-    static bool AppendCSVRow(const string &filePath, const string &headerIfNew, const vector<string> &row);
+    static bool AppendCSVRow(const string &filePath, const vector<string> &row);
 
     // =============================================================
     // Quan ly Tai khoan (Accounts)

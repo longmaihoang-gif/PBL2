@@ -115,17 +115,9 @@ bool DataManager::WriteCSV(const string &filePath, const string &header, const v
 }
 
 // Ghi them (Append) 1 dong vao cuoi file CSV
-bool DataManager::AppendCSVRow(const string &filePath, const string &headerIfNew, const vector<string> &row) {
-    ifstream testFile(filePath);
-    bool needHeader = !testFile.is_open() || testFile.peek() == ifstream::traits_type::eof();
-    testFile.close();
-
+bool DataManager::AppendCSVRow(const string &filePath, const vector<string> &row) {
     ofstream outFile(filePath, ios::app);
     if (!outFile.is_open()) return false;
-
-    if (needHeader && !headerIfNew.empty()) {
-        outFile << headerIfNew << "\n";
-    }
 
     int colCount = (int)row.size();
     for (int j = 0; j < colCount; j++) {
@@ -231,9 +223,9 @@ bool DataManager::LoadProducts(const string &filePath, vector<ShopItem*> &produc
             int power = stoi(tokens[9]);
 
             // Phan loai da hinh bang cap phat dong new truyen thong
-            if (category == "Food" || id.rfind("FOOD-", 0) == 0) {
+            if (category == "Food") {
                 productList.push_back(new FoodItem(id, name, price, qty, desc, nsx, hsd));
-            } else if (category == "Electronics" || id.rfind("ELEC-", 0) == 0) {
+            } else if (category == "Electronics") {
                 productList.push_back(new ElectronicItem(id, name, price, qty, desc, warranty, power));
             } else {
                 productList.push_back(new ShopItem(id, name, category, price, qty, desc));
@@ -328,7 +320,6 @@ bool DataManager::LoadOrders(const string &filePath, vector<OrderRecord> &orderL
 
 // Ghi them (Append) mot don hang moi vao CSV
 bool DataManager::AppendOrder(const string &filePath, const OrderRecord &order) {
-    string header = "OrderID,UID,CustomerName,OrderDate,TotalAmount,ItemsSummary";
     vector<string> row;
     row.push_back(order.OrderID);
     row.push_back(to_string(order.UID));
@@ -337,5 +328,5 @@ bool DataManager::AppendOrder(const string &filePath, const OrderRecord &order) 
     row.push_back(to_string(order.TotalAmount));
     row.push_back(order.ItemsSummary);
 
-    return AppendCSVRow(filePath, header, row);
+    return AppendCSVRow(filePath, row);
 }

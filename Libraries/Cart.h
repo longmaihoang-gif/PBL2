@@ -34,13 +34,13 @@ class Cart : public Entity {
         Node* tail;          // Con tro quan ly nut cuoi (dong vai tro dinh Undo)
         int totalItems;      // Tong so loai mat hang trong gio
 
+        // Khai bao private de ngan chan sao chep ngam gay loi double-free
+        Cart(const Cart&);
+        Cart& operator=(const Cart&);
+
     public:
         Cart(string ownerName = "Khach vang lai");
         virtual ~Cart();
-
-        // Cam sao chep ngam de tranh double-free con tro node
-        Cart(const Cart&) = delete;
-        Cart& operator=(const Cart&) = delete;
 
         // Nghiep vu gio hang & Undo
         bool AddItem(ShopItem* product, int quantity);
