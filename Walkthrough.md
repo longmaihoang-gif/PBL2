@@ -72,10 +72,12 @@ PBL2/
 
 ### 4. Module Quản Lý Dữ Liệu Bền Vững (`DataManager`)
 - **Mục đích:** Xử lý đọc/ghi cơ sở dữ liệu dạng bảng phẳng `.csv` (`Accounts.csv`, `Products.csv`, `Orders.csv`).
-- **Chuẩn hóa RFC 4180:** Xử lý chuỗi có chứa dấu phẩy, ngắt dòng và dấu ngoặc kép an toàn.
+- **Chuẩn hóa RFC 4180:** Xử lý chuỗi có chứa dấu phẩy, ngắt dòng và dấu ngoặc kép an toàn qua bộ đôi `ParseCSVLine` và `EscapeCSV`.
+- **Kiến trúc phân tầng & Nguyên lý DRY:** 
+  - Tách biệt hoàn toàn tầng I/O bằng các hàm cơ sở dùng chung: `ReadCSV` (đọc file thành ma trận 2 chiều `vector<vector<string>>`), `WriteCSV` (ghi ma trận ra file và tự động `EscapeCSV`), và `AppendCSVRow` (ghi nối thêm 1 dòng đơn).
+  - Các hàm nghiệp vụ (`LoadAccounts`, `SaveAccounts`, `LoadProducts`, `SaveProducts`, `LoadOrders`, `AppendOrder`) tái sử dụng 100% các hàm cơ sở này, triệt tiêu hoàn toàn sự lặp lại của các thao tác đóng/mở file và xử lý ký tự.
 - **Quản lý đa hình thân thiện sinh viên:** Sử dụng con trỏ thô lớp cơ sở `ShopItem*` kết hợp cấp phát động `new FoodItem(...)` / `new ElectronicItem(...)` và ép kiểu an toàn `dynamic_cast`. Thu hồi bộ nhớ rõ ràng bằng `delete` ở cuối chương trình, không lạm dụng các thư viện thông minh phức tạp để đảm bảo tính tường minh khi bảo vệ vấn đáp.
 - **Tích hợp nạp tự động:** Nạp dữ liệu tài khoản và hàng hóa đa hình trực tiếp vào `HashTable` với thời gian tra cứu $O(1)$.
-- **Ghi nhận lịch sử đơn hàng:** Hỗ trợ phương thức `AppendOrder` ghi bổ sung đơn hàng vào `Orders.csv`.
 
 ---
 

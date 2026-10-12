@@ -63,25 +63,96 @@ string DataManager::EscapeCSV(const string &text) {
 }
 
 // =================================================================
-//  Doc danh sach tai khoan tu CSV
+//  CAC PHUONG THUC CO SO DOC / GHI CSV (DUNG CHUNG)
 // =================================================================
-bool DataManager::LoadAccounts(const string &filePath, vector<Account> &accountList) {
+
+// Doc toan bo file CSV thanh ma tran du lieu 2 chieu
+bool DataManager::ReadCSV(const string &filePath, vector<vector<string>> &rows, bool skipHeader) {
     ifstream inFile(filePath);
     if (!inFile.is_open()) return false;
 
-    accountList.clear();
+    rows.clear();
     string line;
 
-    // Doc dong tieu de (Header)
-    if (!getline(inFile, line)) {
-        inFile.close();
-        return false;
+    // Bo qua dong tieu de neu co yeu cau
+    if (skipHeader && getline(inFile, line)) {
+        // Dong header duoc bo qua
     }
 
     while (getline(inFile, line)) {
         if (line.empty()) continue;
+        rows.push_back(ParseCSVLine(line)); // Tai su dung ParseCSVLine
+    }
 
-        vector<string> tokens = ParseCSVLine(line);
+    inFile.close();
+    return true;
+}
+
+// Ghi toan bo ma tran 2 chieu xuong CSV (tu dong EscapeCSV tung o)
+bool DataManager::WriteCSV(const string &filePath, const string &header, const vector<vector<string>> &rows) {
+    ofstream outFile(filePath);
+    if (!outFile.is_open()) return false;
+
+    if (!header.empty()) {
+        outFile << header << "\n";
+    }
+
+    int rowCount = (int)rows.size();
+    for (int i = 0; i < rowCount; i++) {
+        const vector<string> &row = rows[i];
+        int colCount = (int)row.size();
+        for (int j = 0; j < colCount; j++) {
+            outFile << EscapeCSV(row[j]);
+            if (j + 1 < colCount) {
+                outFile << ",";
+            }
+        }
+        outFile << "\n";
+    }
+
+    outFile.close();
+    return true;
+}
+
+// Ghi them (Append) 1 dong vao cuoi file CSV
+bool DataManager::AppendCSVRow(const string &filePath, const string &headerIfNew, const vector<string> &row) {
+    ifstream testFile(filePath);
+    bool needHeader = !testFile.is_open() || testFile.peek() == ifstream::traits_type::eof();
+    testFile.close();
+
+    ofstream outFile(filePath, ios::app);
+    if (!outFile.is_open()) return false;
+
+    if (needHeader && !headerIfNew.empty()) {
+        outFile << headerIfNew << "\n";
+    }
+
+    int colCount = (int)row.size();
+    for (int j = 0; j < colCount; j++) {
+        outFile << EscapeCSV(row[j]);
+        if (j + 1 < colCount) {
+            outFile << ",";
+        }
+    }
+    outFile << "\n";
+
+    outFile.close();
+    return true;
+}
+
+// =================================================================
+//  QUAN LY TAI KHOAN (ACCOUNTS)
+// =================================================================
+
+// Doc danh sach tai khoan tu CSV
+bool DataManager::LoadAccounts(const string &filePath, vector<Account> &accountList) {
+    vector<vector<string>> rows;
+    if (!ReadCSV(filePath, rows, true)) return false;
+
+    accountList.clear();
+    int count = (int)rows.size();
+    for (int i = 0; i < count; i++) {
+        const vector<string> &tokens = rows[i];
         if (tokens.size() >= 6) {
             long long uid = stoll(tokens[0]);
             string username = tokens[1];
@@ -94,75 +165,59 @@ bool DataManager::LoadAccounts(const string &filePath, vector<Account> &accountL
             accountList.push_back(acc);
         }
     }
-
-    inFile.close();
     return true;
 }
 
-// =================================================================
-//  Ghi danh sach tai khoan xuong CSV
-// =================================================================
+// Ghi danh sach tai khoan xuong CSV
 bool DataManager::SaveAccounts(const string &filePath, const vector<Account> &accountList) {
-    ofstream outFile(filePath);
-    if (!outFile.is_open()) return false;
-
-    // Ghi dong tieu de
-    outFile << "UID,Username,Password,FullName,Role,Balance\n";
+    string header = "UID,Username,Password,FullName,Role,Balance";
+    vector<vector<string>> rows;
 
     int count = (int)accountList.size();
     for (int i = 0; i < count; i++) {
         const Account &acc = accountList[i];
-        outFile << acc.getUID() << ","
-                << EscapeCSV(acc.getUsername()) << ","
-                << EscapeCSV(acc.getPassword()) << ","
-                << EscapeCSV(acc.getName()) << ","
-                << (acc.getPermission() == Admin ? 0 : 1) << ","
-                << acc.getWallet().GetMoneyCount() << "\n";
+        vector<string> row;
+        row.push_back(to_string(acc.getUID()));
+        row.push_back(acc.getUsername());
+        row.push_back(acc.getPassword());
+        row.push_back(acc.getName());
+        row.push_back(acc.getPermission() == Admin ? "0" : "1");
+        row.push_back(to_string(acc.getWallet().GetMoneyCount()));
+        rows.push_back(row);
     }
 
-    outFile.close();
-    return true;
+    return WriteCSV(filePath, header, rows);
 }
 
-// =================================================================
-//  Nap tai khoan vao Bang bam (HashTable)
-// =================================================================
+// Nap tai khoan vao Bang bam (HashTable)
 bool DataManager::LoadAccountsToTable(const string &filePath, HashTable &accountTable, vector<Account> &accountList) {
     if (!LoadAccounts(filePath, accountList)) return false;
 
     int count = (int)accountList.size();
     for (int i = 0; i < count; i++) {
-        // Luu vao bang bam tra cuu theo Username
         accountTable.Insert(accountList[i].getUsername(), accountList[i]);
     }
-
     return true;
 }
 
 // =================================================================
-//  Doc danh muc san pham tu CSV (Ho tro da hinh FoodItem & ElectronicItem)
+//  QUAN LY SAN PHAM (PRODUCTS)
 // =================================================================
+
+// Doc danh muc san pham tu CSV (Ho tro da hinh FoodItem & ElectronicItem)
 bool DataManager::LoadProducts(const string &filePath, vector<ShopItem*> &productList) {
-    ifstream inFile(filePath);
-    if (!inFile.is_open()) return false;
+    vector<vector<string>> rows;
+    if (!ReadCSV(filePath, rows, true)) return false;
 
     // Giai phong bo nho cu neu danh sach da co phan tu
     for (int i = 0; i < (int)productList.size(); i++) {
         delete productList[i];
     }
     productList.clear();
-    string line;
 
-    // Doc dong tieu de (Header)
-    if (!getline(inFile, line)) {
-        inFile.close();
-        return false;
-    }
-
-    while (getline(inFile, line)) {
-        if (line.empty()) continue;
-
-        vector<string> tokens = ParseCSVLine(line);
+    int count = (int)rows.size();
+    for (int i = 0; i < count; i++) {
+        const vector<string> &tokens = rows[i];
         if (tokens.size() >= 10) {
             string id = tokens[0];
             string name = tokens[1];
@@ -185,54 +240,55 @@ bool DataManager::LoadProducts(const string &filePath, vector<ShopItem*> &produc
             }
         }
     }
-
-    inFile.close();
     return true;
 }
 
-// =================================================================
-//  Ghi danh muc san pham xuong CSV
-// =================================================================
+// Ghi danh muc san pham xuong CSV
 bool DataManager::SaveProducts(const string &filePath, const vector<ShopItem*> &productList) {
-    ofstream outFile(filePath);
-    if (!outFile.is_open()) return false;
-
-    // Ghi dong tieu de
-    outFile << "ProductID,ProductName,Category,Price,Quantity,Description,ManufactureDate,ExpiryDate,WarrantyMonths,PowerWatts\n";
+    string header = "ProductID,ProductName,Category,Price,Quantity,Description,ManufactureDate,ExpiryDate,WarrantyMonths,PowerWatts";
+    vector<vector<string>> rows;
 
     int count = (int)productList.size();
     for (int i = 0; i < count; i++) {
         const ShopItem* item = productList[i];
         if (item == nullptr) continue;
 
-        outFile << EscapeCSV(item->ProductID) << ","
-                << EscapeCSV(item->Name) << ","
-                << EscapeCSV(item->Category) << ","
-                << item->Price << ","
-                << item->QuantityRemaining << ","
-                << EscapeCSV(item->Description) << ",";
+        vector<string> row;
+        row.push_back(item->ProductID);
+        row.push_back(item->Name);
+        row.push_back(item->Category);
+        row.push_back(to_string(item->Price));
+        row.push_back(to_string(item->QuantityRemaining));
+        row.push_back(item->Description);
 
         // Kiem tra kieu da hinh bang dynamic_cast truyen thong
         const FoodItem* food = dynamic_cast<const FoodItem*>(item);
         const ElectronicItem* elec = dynamic_cast<const ElectronicItem*>(item);
 
         if (food != nullptr) {
-            outFile << EscapeCSV(food->ManufactureDate) << ","
-                    << EscapeCSV(food->ExpiryDate) << ",0,0\n";
+            row.push_back(food->ManufactureDate);
+            row.push_back(food->ExpiryDate);
+            row.push_back("0");
+            row.push_back("0");
         } else if (elec != nullptr) {
-            outFile << "-,-," << elec->WarrantyMonths << "," << elec->PowerWatts << "\n";
+            row.push_back("-");
+            row.push_back("-");
+            row.push_back(to_string(elec->WarrantyMonths));
+            row.push_back(to_string(elec->PowerWatts));
         } else {
-            outFile << "-,-,0,0\n";
+            row.push_back("-");
+            row.push_back("-");
+            row.push_back("0");
+            row.push_back("0");
         }
+
+        rows.push_back(row);
     }
 
-    outFile.close();
-    return true;
+    return WriteCSV(filePath, header, rows);
 }
 
-// =================================================================
-//  Nap san pham vao Bang bam (HashTable)
-// =================================================================
+// Nap san pham vao Bang bam (HashTable)
 bool DataManager::LoadProductsToTable(const string &filePath, HashTable &productTable, vector<ShopItem*> &productList) {
     if (!LoadProducts(filePath, productList)) return false;
 
@@ -240,30 +296,22 @@ bool DataManager::LoadProductsToTable(const string &filePath, HashTable &product
     for (int i = 0; i < count; i++) {
         productTable.Insert(productList[i]->ProductID, productList[i]);
     }
-
     return true;
 }
 
 // =================================================================
-//  Doc lich su hoa don tu CSV
+//  QUAN LY HOA DON (ORDERS)
 // =================================================================
+
+// Doc lich su hoa don tu CSV
 bool DataManager::LoadOrders(const string &filePath, vector<OrderRecord> &orderList) {
-    ifstream inFile(filePath);
-    if (!inFile.is_open()) return false;
+    vector<vector<string>> rows;
+    if (!ReadCSV(filePath, rows, true)) return false;
 
     orderList.clear();
-    string line;
-
-    // Doc dong tieu de
-    if (!getline(inFile, line)) {
-        inFile.close();
-        return false;
-    }
-
-    while (getline(inFile, line)) {
-        if (line.empty()) continue;
-
-        vector<string> tokens = ParseCSVLine(line);
+    int count = (int)rows.size();
+    for (int i = 0; i < count; i++) {
+        const vector<string> &tokens = rows[i];
         if (tokens.size() >= 6) {
             string id = tokens[0];
             long long uid = stoll(tokens[1]);
@@ -275,34 +323,19 @@ bool DataManager::LoadOrders(const string &filePath, vector<OrderRecord> &orderL
             orderList.push_back(OrderRecord(id, uid, name, date, amount, summary));
         }
     }
-
-    inFile.close();
     return true;
 }
 
-// =================================================================
-//  Ghi them (Append) mot don hang moi vao CSV
-// =================================================================
+// Ghi them (Append) mot don hang moi vao CSV
 bool DataManager::AppendOrder(const string &filePath, const OrderRecord &order) {
-    // Kiem tra neu tep chua ton tai thi tao moi kem header
-    ifstream testFile(filePath);
-    bool needHeader = !testFile.is_open() || testFile.peek() == ifstream::traits_type::eof();
-    testFile.close();
+    string header = "OrderID,UID,CustomerName,OrderDate,TotalAmount,ItemsSummary";
+    vector<string> row;
+    row.push_back(order.OrderID);
+    row.push_back(to_string(order.UID));
+    row.push_back(order.CustomerName);
+    row.push_back(order.OrderDate);
+    row.push_back(to_string(order.TotalAmount));
+    row.push_back(order.ItemsSummary);
 
-    ofstream outFile(filePath, ios::app);
-    if (!outFile.is_open()) return false;
-
-    if (needHeader) {
-        outFile << "OrderID,UID,CustomerName,OrderDate,TotalAmount,ItemsSummary\n";
-    }
-
-    outFile << EscapeCSV(order.OrderID) << ","
-            << order.UID << ","
-            << EscapeCSV(order.CustomerName) << ","
-            << EscapeCSV(order.OrderDate) << ","
-            << order.TotalAmount << ","
-            << EscapeCSV(order.ItemsSummary) << "\n";
-
-    outFile.close();
-    return true;
+    return AppendCSVRow(filePath, header, row);
 }
