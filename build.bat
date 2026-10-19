@@ -36,6 +36,8 @@ g++ -std=c++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     Libraries/DLinkedList.cpp ^
     Libraries/DataManager.cpp ^
     Libraries/HashTable.cpp ^
+    Libraries/AccountRepository.cpp ^
+    Libraries/AuthManager.cpp ^
     Libraries/imgui-master/imgui.cpp ^
     Libraries/imgui-master/imgui_draw.cpp ^
     Libraries/imgui-master/imgui_tables.cpp ^

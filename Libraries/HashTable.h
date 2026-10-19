@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <any>
 
 using namespace std;
@@ -46,6 +47,10 @@ public:
     // Chiêu thức bổ trợ (Helper): Lấy dữ liệu đã ép kiểu nhanh gọn
     template <typename T>
     T* Get(const string& key);
+
+    // Trích xuất toàn bộ giá trị có kiểu T trong bảng băm
+    template <typename T>
+    vector<T> GetAllValues() const;
 };
 
 // ============================================================
@@ -56,4 +61,20 @@ inline T* HashTable::Get(const string& key) {
     any* val = Search(key);
     if (val == nullptr) return nullptr;
     return any_cast<T>(val);
+}
+
+template <typename T>
+inline vector<T> HashTable::GetAllValues() const {
+    vector<T> result;
+    for (int i = 0; i < capacity; i++) {
+        HashNode* curr = buckets[i];
+        while (curr != nullptr) {
+            const T* valPtr = any_cast<T>(&curr->value);
+            if (valPtr != nullptr) {
+                result.push_back(*valPtr);
+            }
+            curr = curr->next;
+        }
+    }
+    return result;
 }

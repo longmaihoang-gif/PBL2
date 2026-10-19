@@ -49,6 +49,7 @@ class Account : public Entity {
         string getName() const { return Name; }
         Role getPermission() const { return Permission; }
         Wallet& getWallet() { return UserWallet; }
+        unsigned long long getBalance() const { return UserWallet.GetMoneyCount(); }
 
         // Setter
         void setUsername(const string &username) { Username = username; }

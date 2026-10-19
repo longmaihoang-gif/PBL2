@@ -19,6 +19,8 @@
 #include "../Libraries/DLinkedList.h"
 #include "../Libraries/DataManager.h"
 #include "../Libraries/Cart.h"
+#include "../Libraries/AccountRepository.h"
+#include "../Libraries/AuthManager.h"
 
 using namespace std;
 
@@ -132,7 +134,79 @@ int main() {
         delete productList[i];
     }
     productList.clear();
+    // 5. Kiem thu Module AccountRepository & AuthManager
+    cout << "\n============================================================\n";
+    cout << "   KIEM THU MODULE XAC THUC & QUAN LY PHIEN (AUTH MANAGER)\n";
+    cout << "============================================================\n";
 
-    cout << "\n[INFO] Hoan tat toan bo kiem thu Module Cart & Undo. He thong san sang cho Quest 2 (Menu CLI)!\n";
+    AccountRepository accountRepo("Data/Accounts.csv");
+    cout << "[KHOI TAO] AccountRepository: " << (accountRepo.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+
+    AuthManager auth(&accountRepo);
+
+    // Kiem thu dang nhap rong
+    AuthResult resEmpty = auth.Login("", "");
+    cout << "  1. Kiem tra nhap rong: " << (resEmpty == AUTH_ERR_EMPTY_INPUT ? "DUNG (AUTH_ERR_EMPTY_INPUT)" : "SAI") << "\n";
+
+    // Kiem thu tai khoan khong ton tai
+    AuthResult resNotFound = auth.Login("khong_ton_tai_123", "123");
+    cout << "  2. Kiem tra tai khoan khong ton tai: " << (resNotFound == AUTH_ERR_USER_NOT_FOUND ? "DUNG (AUTH_ERR_USER_NOT_FOUND)" : "SAI") << "\n";
+
+    // Kiem thu sai mat khau
+    AuthResult resWrongPass = auth.Login("admin", "sai_mat_khau");
+    cout << "  3. Kiem tra sai mat khau: " << (resWrongPass == AUTH_ERR_WRONG_PASSWORD ? "DUNG (AUTH_ERR_WRONG_PASSWORD)" : "SAI") << "\n";
+
+    // Kiem thu dang nhap hop le (Admin)
+    AuthResult resAdmin = auth.Login("admin", "admin123");
+    cout << "  4. Dang nhap Admin ('admin'): " << (resAdmin == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
+    if (auth.IsLoggedIn()) {
+        cout << "     -> Ten nguoi dung: " << auth.GetCurrentAccount()->getName() << "\n";
+        cout << "     -> Phan quyen: " << (auth.GetCurrentRole() == Admin ? "Admin (Chinh xac)" : "User") << "\n";
+    }
+
+    // Kiem thu dang xuat
+    auth.Logout();
+    cout << "  5. Kiem tra dang xuat: " << (!auth.IsLoggedIn() ? "THANH CONG (Da xoa phien)" : "THAT BAI") << "\n";
+
+    // Kiem thu dang ky tai khoan moi
+    string testUser = "test_member";
+    if (accountRepo.Exists(testUser)) {
+        accountRepo.RemoveAccount(testUser);
+    }
+    AuthResult resReg = auth.Register(testUser, "matkhau123", "Nguyen Van Test", User, 350000);
+    cout << "  6. Dang ky tai khoan moi ('" << testUser << "'): " << (resReg == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
+
+    // Kiem thu dang ky trung ten
+    AuthResult resDuplicate = auth.Register(testUser, "123", "Test Duplicate", User, 0);
+    cout << "  7. Kiem tra dang ky trung ten: " << (resDuplicate == AUTH_ERR_USER_ALREADY_EXISTS ? "DUNG (AUTH_ERR_USER_ALREADY_EXISTS)" : "SAI") << "\n";
+
+    // Dang nhap voi tai khoan vua tao
+    AuthResult resLoginNew = auth.Login(testUser, "matkhau123");
+    cout << "  8. Dang nhap tai khoan moi: " << (resLoginNew == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
+    if (auth.IsLoggedIn()) {
+        cout << "     -> So du vi: " << auth.GetCurrentAccount()->getBalance() << " VND (Dung 350000)\n";
+    }
+
+    // Kiem thu doi mat khau
+    AuthResult resChangePass = auth.ChangePassword("matkhau123", "matkhau_moi_456");
+    cout << "  9. Doi mat khau: " << (resChangePass == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
+
+    auth.Logout();
+
+    // Kiem thu dang nhap voi mat khau moi
+    AuthResult resReLogin = auth.Login(testUser, "matkhau_moi_456");
+    cout << "  10. Dang nhap lai voi mat khau moi: " << (resReLogin == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
+
+    // Kiem tra tinh ben vung tu o dia (Khoi tao AccountRepository doc lap de kiem tra)
+    AccountRepository diskChecker("Data/Accounts.csv");
+    Account* checkAcc = diskChecker.GetByUsername(testUser);
+    bool persistentOk = (checkAcc != nullptr && checkAcc->VerifyPassword("matkhau_moi_456"));
+    cout << "  11. Kiem tra dong bo CSV (Write-Through): " << (persistentOk ? "THANH CONG (Du lieu da luu ben vung vao file)" : "THAT BAI") << "\n";
+
+    // Don dep tai khoan test de giu file Data/Accounts.csv nguyen ban
+    accountRepo.RemoveAccount(testUser);
+    cout << "  12. Don dep tai khoan test sau kiem thu: " << (!accountRepo.Exists(testUser) ? "THANH CONG (File Accounts.csv sach se)" : "THAT BAI") << "\n";
+
+    cout << "\n[INFO] Hoan tat toan bo kiem thu Backend Dang nhap va Cart!\n";
     return 0;
 }

@@ -174,7 +174,7 @@ bool DataManager::SaveAccounts(const string &filePath, const vector<Account> &ac
         row.push_back(acc.getPassword());
         row.push_back(acc.getName());
         row.push_back(acc.getPermission() == Admin ? "0" : "1");
-        row.push_back(to_string(acc.getWallet().GetMoneyCount()));
+        row.push_back(to_string(acc.getBalance()));
         rows.push_back(row);
     }
 

@@ -20,9 +20,14 @@ PBL2/
 │   ├── DLinkedList.h    # Khung khai báo Nút danh sách liên kết đôi (Node)
 │   ├── DLinkedList.cpp  # Hiện thực chi tiết thao tác chèn/xóa liên kết đôi
 │   ├── DataManager.h    # Khai báo module bóc tách CSV và đồng bộ dữ liệu
-│   └── DataManager.cpp  # Hiện thực chi tiết đọc/ghi CSV chuẩn RFC 4180
+│   ├── DataManager.cpp  # Hiện thực chi tiết đọc/ghi CSV chuẩn RFC 4180
+│   ├── AccountRepository.h   # Khai báo kho trung gian đồng bộ HashTable và CSV
+│   ├── AccountRepository.cpp # Hiện thực quản lý dữ liệu tài khoản và Write-Through
+│   ├── AuthManager.h         # Khai báo bộ điều phối xác thực và phiên làm việc
+│   └── AuthManager.cpp       # Hiện thực đăng nhập, đăng xuất, phân quyền O(1)
 ├── src/                 # Mã nguồn ứng dụng chính
-│   └── Main.cpp         # Điểm khởi chạy chương trình (Entry Point)
+│   ├── Main.cpp         # Điểm khởi chạy chương trình kiểm thử console
+│   └── UI.cpp           # Giao diện đồ họa Dear ImGui & GLFW
 ├── Data/                # Thư mục lưu trữ cơ sở dữ liệu cục bộ (.csv)
 │   ├── Accounts.csv     # Cơ sở dữ liệu tài khoản
 │   ├── Products.csv     # Cơ sở dữ liệu danh mục hàng hóa
@@ -92,14 +97,34 @@ PBL2/
 
 ---
 
-### 6. Tích Hợp Chương Trình Chính (`src/Main.cpp`)
+### 6. Module Kho Lưu Trữ Dữ Liệu Trung Gian (`AccountRepository`)
+- **Mục đích:** Đóng vai trò lớp truy xuất dữ liệu trung gian (Repository Pattern), là cầu nối đồng bộ duy nhất giữa Bảng băm `HashTable` trên RAM và tệp tin `Accounts.csv` trên ổ đĩa.
+- **Triệt tiêu trùng lặp bộ nhớ:** Không duy trì danh sách `vector` thường trực trong RAM. Chỉ sử dụng duy nhất một bảng băm `accountTable` cho toàn bộ tác nghiệp truy vấn với thời gian trung bình $O(1)$.
+- **Cơ chế Ghi xuyên thấu (Write-Through Persistence):**
+  - Mọi thao tác thêm tài khoản mới (`AddAccount`), đổi mật khẩu (`UpdatePassword`), cập nhật thông tin (`UpdateAccount`) hoặc xóa tài khoản (`RemoveAccount`) đều được đồng bộ tức thì xuống tệp `Accounts.csv`.
+  - Triệt tiêu 100% nguy cơ xung đột dữ liệu giữa bộ nhớ tức thời và lưu trữ vĩnh viễn.
+- **Khởi tạo tự động:** Nạp trực tiếp dữ liệu từ file CSV ngay trong Constructor, cung cấp phương thức kiểm tra trạng thái `IsLoaded()` thân thiện và tiện lợi.
+
+---
+
+### 7. Module Xác Thực & Quản Lý Phiên Làm Việc (`AuthManager`)
+- **Mục đích:** Điều phối toàn bộ nghiệp vụ xác thực đăng nhập, đăng xuất, đăng ký và phân quyền hệ thống mà không cần quan tâm đến chi tiết đọc/ghi tệp tin hay giải thuật băm.
+- **Mã kết quả chuẩn hóa (`enum AuthResult`):** Cung cấp các mã trạng thái rõ ràng (`AUTH_SUCCESS`, `AUTH_ERR_EMPTY_INPUT`, `AUTH_ERR_USER_NOT_FOUND`, `AUTH_ERR_WRONG_PASSWORD`, `AUTH_ERR_USER_ALREADY_EXISTS`, `AUTH_ERR_NOT_LOGGED_IN`) phục vụ thông báo trực quan cho giao diện.
+- **Quản lý phiên (Session Management):** Duy trì con trỏ phiên làm việc `Account* currentAccount`, cung cấp các hàm truy vấn `IsLoggedIn()`, `GetCurrentAccount()`, `GetCurrentRole()` để điều hướng giao diện theo quyền `Admin` và `User`.
+
+---
+
+### 8. Tích Hợp & Kịch Bản Kiểm Thử Toàn Diện (`src/Main.cpp`)
 - Đã liên kết đầy đủ toàn bộ các thư viện nội bộ của dự án.
 - Tự động nạp dữ liệu từ thư mục `Data/` vào `HashTable`.
-- Tích hợp kịch bản kiểm thử toàn diện cho `Cart` và `Undo` (thêm món, kiểm tra vượt tồn kho, Undo lần 1, Undo lần 2, thêm món mới và giải phóng bộ nhớ).
+- Tích hợp kịch bản kiểm thử toàn diện:
+  1. **Module Giỏ hàng & Hoàn tác:** Thêm món, kiểm tra vượt tồn kho, hoàn tác LIFO 2 lần, thêm món mới sau hoàn tác, hủy giỏ hàng và khôi phục tồn kho.
+  2. **Module Xác thực & Kho tài khoản:** 12 ca kiểm thử tự động (đăng nhập rỗng, tài khoản không tồn tại, sai mật khẩu, đăng nhập Admin thành công, đăng xuất, đăng ký mới, chặn trùng tên, đăng nhập tài khoản mới, đổi mật khẩu, kiểm tra tính bền vững từ file CSV, dọn dẹp dữ liệu kiểm thử giữ nguyên bản file `Accounts.csv`).
 
 ---
 
 ## 🎯 III. Kế Hoạch Tiếp Theo
-1. Thiết kế menu giao diện dòng lệnh (CLI) tương tác trực tiếp, phân quyền theo phiên đăng nhập của `Admin` và `User`.
-2. Hoàn thiện tính năng thanh toán (trừ số dư ví tiền `Wallet`, chốt đơn vào `Orders.csv`, cập nhật tồn kho `Products.csv`).
-3. Xuất hóa đơn bán lẻ dạng file `.txt` mô phỏng hóa đơn in nhiệt tại quầy.
+1. Thiết kế giao diện đăng nhập trực tiếp (Menu CLI điều hướng hoặc màn hình đăng nhập đồ họa trên Dear ImGui).
+2. Phân luồng tính năng theo phiên làm việc: giao diện quản trị kho & doanh thu cho `Admin`, giao diện xem hàng & mua sắm cho `User`.
+3. Hoàn thiện tính năng thanh toán (trừ số dư ví tiền `Wallet`, chốt đơn vào `Orders.csv`, cập nhật tồn kho `Products.csv`).
+4. Xuất hóa đơn bán lẻ dạng file `.txt` mô phỏng hóa đơn in nhiệt tại quầy.
