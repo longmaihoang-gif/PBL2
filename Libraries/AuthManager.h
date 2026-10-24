@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "Account.h"
-#include "AccountRepository.h"
+#include "AccountStorage.h"
 
 using namespace std;
 
@@ -24,12 +24,12 @@ enum AuthResult {
 // =================================================================
 class AuthManager {
 private:
-    AccountRepository* repository;  // Con trỏ tới hệ thống quản lý dữ liệu tài khoản
+    AccountStorage* storage;        // Con trỏ tới kho lưu trữ tài khoản
     Account* currentAccount;        // Con trỏ tới tài khoản đang đăng nhập hiện tại
 
 public:
     // Khởi tạo AuthManager với kho tài khoản tương ứng
-    AuthManager(AccountRepository* repo);
+    AuthManager(AccountStorage* store);
     ~AuthManager();
 
     // Nghiệp vụ đăng nhập & đăng xuất

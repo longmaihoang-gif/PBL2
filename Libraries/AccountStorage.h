@@ -7,11 +7,11 @@
 using namespace std;
 
 // =================================================================
-//  ACCOUNT REPOSITORY: Hệ thống trung gian quản lý dữ liệu tài khoản
+//  ACCOUNT STORAGE: Hệ thống trung gian quản lý dữ liệu tài khoản
 //  - Đóng vai trò cầu nối duy nhất giữa Bảng băm (RAM) và Tệp CSV (Disk)
 //  - Áp dụng cơ chế Write-Through đảm bảo không xung đột dữ liệu
 // =================================================================
-class AccountRepository {
+class AccountStorage {
 private:
     HashTable accountTable;         // Bảng băm lưu trữ tài khoản trên RAM (Tra cứu O(1))
     string dataFilePath;            // Đường dẫn tệp CSV dữ liệu tài khoản
@@ -25,8 +25,8 @@ private:
 
 public:
     // Khởi tạo và tự động nạp dữ liệu từ tệp tin
-    AccountRepository(const string& filePath = "Data/Accounts.csv");
-    ~AccountRepository();
+    AccountStorage(const string& filePath = "Data/Accounts.csv");
+    ~AccountStorage();
 
     // Kiểm tra trạng thái nạp dữ liệu từ tệp
     bool IsLoaded() const { return isLoadedSuccessfully; }

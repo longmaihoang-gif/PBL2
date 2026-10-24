@@ -19,7 +19,7 @@
 #include "../Libraries/DLinkedList.h"
 #include "../Libraries/DataManager.h"
 #include "../Libraries/Cart.h"
-#include "../Libraries/AccountRepository.h"
+#include "../Libraries/AccountStorage.h"
 #include "../Libraries/AuthManager.h"
 
 using namespace std;
@@ -134,13 +134,13 @@ int main() {
         delete productList[i];
     }
     productList.clear();
-    // 5. Kiem thu Module AccountRepository & AuthManager
+    // 5. Kiem thu Module AccountStorage & AuthManager
     cout << "\n============================================================\n";
     cout << "   KIEM THU MODULE XAC THUC & QUAN LY PHIEN (AUTH MANAGER)\n";
     cout << "============================================================\n";
 
-    AccountRepository accountRepo("Data/Accounts.csv");
-    cout << "[KHOI TAO] AccountRepository: " << (accountRepo.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+    AccountStorage accountRepo("Data/Accounts.csv");
+    cout << "[KHOI TAO] AccountStorage: " << (accountRepo.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
 
     AuthManager auth(&accountRepo);
 
@@ -197,8 +197,8 @@ int main() {
     AuthResult resReLogin = auth.Login(testUser, "matkhau_moi_456");
     cout << "  10. Dang nhap lai voi mat khau moi: " << (resReLogin == AUTH_SUCCESS ? "THANH CONG" : "THAT BAI") << "\n";
 
-    // Kiem tra tinh ben vung tu o dia (Khoi tao AccountRepository doc lap de kiem tra)
-    AccountRepository diskChecker("Data/Accounts.csv");
+    // Kiem tra tinh ben vung tu o dia (Khoi tao AccountStorage doc lap de kiem tra)
+    AccountStorage diskChecker("Data/Accounts.csv");
     Account* checkAcc = diskChecker.GetByUsername(testUser);
     bool persistentOk = (checkAcc != nullptr && checkAcc->VerifyPassword("matkhau_moi_456"));
     cout << "  11. Kiem tra dong bo CSV (Write-Through): " << (persistentOk ? "THANH CONG (Du lieu da luu ben vung vao file)" : "THAT BAI") << "\n";

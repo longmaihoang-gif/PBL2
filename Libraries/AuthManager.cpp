@@ -6,8 +6,8 @@ using namespace std;
 //  CONSTRUCTOR & DESTRUCTOR
 // =================================================================
 
-AuthManager::AuthManager(AccountRepository* repo)
-    : repository(repo), currentAccount(nullptr) {}
+AuthManager::AuthManager(AccountStorage* store)
+    : storage(store), currentAccount(nullptr) {}
 
 AuthManager::~AuthManager() {
     currentAccount = nullptr;
@@ -23,12 +23,12 @@ AuthResult AuthManager::Login(const string& username, const string& password) {
         return AUTH_ERR_EMPTY_INPUT;
     }
 
-    if (repository == nullptr) {
+    if (storage == nullptr) {
         return AUTH_ERR_STORAGE_FAILED;
     }
 
-    // Tra cuu tai khoan qua he thong trung gian voi toc do O(1)
-    Account* acc = repository->GetByUsername(username);
+    // Tra cuu tai khoan qua kho luu tru voi toc do O(1)
+    Account* acc = storage->GetByUsername(username);
     if (acc == nullptr) {
         return AUTH_ERR_USER_NOT_FOUND;
     }
@@ -72,12 +72,12 @@ AuthResult AuthManager::Register(const string& username, const string& password,
         return AUTH_ERR_EMPTY_INPUT;
     }
 
-    if (repository == nullptr) {
+    if (storage == nullptr) {
         return AUTH_ERR_STORAGE_FAILED;
     }
 
     // Kiem tra trung lap ten dang nhap
-    if (repository->Exists(username)) {
+    if (storage->Exists(username)) {
         return AUTH_ERR_USER_ALREADY_EXISTS;
     }
 
@@ -85,7 +85,7 @@ AuthResult AuthManager::Register(const string& username, const string& password,
     Account newAcc(username, password, fullName, role, initialMoney);
 
     // Luu dong thoi vao Bang bam va tep CSV (Write-Through)
-    if (!repository->AddAccount(newAcc)) {
+    if (!storage->AddAccount(newAcc)) {
         return AUTH_ERR_STORAGE_FAILED;
     }
 
@@ -107,12 +107,12 @@ AuthResult AuthManager::ChangePassword(const string& oldPassword, const string& 
         return AUTH_ERR_WRONG_PASSWORD;
     }
 
-    if (repository == nullptr) {
+    if (storage == nullptr) {
         return AUTH_ERR_STORAGE_FAILED;
     }
 
     // Cap nhat mat khau moi tren RAM va dong bo xuong CSV
-    if (!repository->UpdatePassword(currentAccount->getUsername(), newPassword)) {
+    if (!storage->UpdatePassword(currentAccount->getUsername(), newPassword)) {
         return AUTH_ERR_STORAGE_FAILED;
     }
 

@@ -21,8 +21,8 @@ PBL2/
 │   ├── DLinkedList.cpp  # Hiện thực chi tiết thao tác chèn/xóa liên kết đôi
 │   ├── DataManager.h    # Khai báo module bóc tách CSV và đồng bộ dữ liệu
 │   ├── DataManager.cpp  # Hiện thực chi tiết đọc/ghi CSV chuẩn RFC 4180
-│   ├── AccountRepository.h   # Khai báo kho trung gian đồng bộ HashTable và CSV
-│   ├── AccountRepository.cpp # Hiện thực quản lý dữ liệu tài khoản và Write-Through
+│   ├── AccountStorage.h      # Khai báo kho trung gian đồng bộ HashTable và CSV
+│   ├── AccountStorage.cpp    # Hiện thực quản lý dữ liệu tài khoản và Write-Through
 │   ├── AuthManager.h         # Khai báo bộ điều phối xác thực và phiên làm việc
 │   └── AuthManager.cpp       # Hiện thực đăng nhập, đăng xuất, phân quyền O(1)
 ├── src/                 # Mã nguồn ứng dụng chính
@@ -97,7 +97,7 @@ PBL2/
 
 ---
 
-### 6. Module Kho Lưu Trữ Dữ Liệu Trung Gian (`AccountRepository`)
+### 6. Module Kho Lưu Trữ Dữ Liệu Trung Gian (`AccountStorage`)
 - **Mục đích:** Đóng vai trò lớp truy xuất dữ liệu trung gian (Repository Pattern), là cầu nối đồng bộ duy nhất giữa Bảng băm `HashTable` trên RAM và tệp tin `Accounts.csv` trên ổ đĩa.
 - **Triệt tiêu trùng lặp bộ nhớ:** Không duy trì danh sách `vector` thường trực trong RAM. Chỉ sử dụng duy nhất một bảng băm `accountTable` cho toàn bộ tác nghiệp truy vấn với thời gian trung bình $O(1)$.
 - **Cơ chế Ghi xuyên thấu (Write-Through Persistence):**

@@ -1,4 +1,4 @@
-#include "AccountRepository.h"
+#include "AccountStorage.h"
 #include "DataManager.h"
 
 using namespace std;
@@ -7,12 +7,12 @@ using namespace std;
 //  CONSTRUCTOR & DESTRUCTOR
 // =================================================================
 
-AccountRepository::AccountRepository(const string& filePath)
+AccountStorage::AccountStorage(const string& filePath)
     : dataFilePath(filePath), isLoadedSuccessfully(false) {
     isLoadedSuccessfully = LoadFromDisk();
 }
 
-AccountRepository::~AccountRepository() {
+AccountStorage::~AccountStorage() {
     // HashTable tu dong thu hoi bo nho bucket va node trong destructor cua no
 }
 
@@ -21,7 +21,7 @@ AccountRepository::~AccountRepository() {
 // =================================================================
 
 // Nap danh sach tai khoan tu CSV len Bang bam RAM
-bool AccountRepository::LoadFromDisk() {
+bool AccountStorage::LoadFromDisk() {
     accountTable.Clear();
     vector<Account> loadedList;
     if (!DataManager::LoadAccounts(dataFilePath, loadedList)) {
@@ -36,7 +36,7 @@ bool AccountRepository::LoadFromDisk() {
 }
 
 // Dong bo toan bo tai khoan tu Bang bam xuong tep CSV
-bool AccountRepository::SyncToDisk() {
+bool AccountStorage::SyncToDisk() {
     vector<Account> allAccounts = accountTable.GetAllValues<Account>();
     return DataManager::SaveAccounts(dataFilePath, allAccounts);
 }
@@ -46,17 +46,17 @@ bool AccountRepository::SyncToDisk() {
 // =================================================================
 
 // Tra cuu tai khoan theo username voi thoi gian trung binh O(1)
-Account* AccountRepository::GetByUsername(const string& username) {
+Account* AccountStorage::GetByUsername(const string& username) {
     return accountTable.Get<Account>(username);
 }
 
 // Kiem tra su ton tai cua ten dang nhap
-bool AccountRepository::Exists(const string& username) {
+bool AccountStorage::Exists(const string& username) {
     return accountTable.Contains(username);
 }
 
 // Them tai khoan moi (Write-Through: Nap RAM va ghi them dong vao CSV)
-bool AccountRepository::AddAccount(const Account& acc) {
+bool AccountStorage::AddAccount(const Account& acc) {
     if (Exists(acc.getUsername())) {
         return false;
     }
@@ -77,7 +77,7 @@ bool AccountRepository::AddAccount(const Account& acc) {
 }
 
 // Cap nhat mat khau cho tai khoan va dong bo xuong CSV
-bool AccountRepository::UpdatePassword(const string& username, const string& newPassword) {
+bool AccountStorage::UpdatePassword(const string& username, const string& newPassword) {
     Account* acc = GetByUsername(username);
     if (acc == nullptr) {
         return false;
@@ -88,7 +88,7 @@ bool AccountRepository::UpdatePassword(const string& username, const string& new
 }
 
 // Cap nhat thong tin tai khoan va dong bo xuong CSV
-bool AccountRepository::UpdateAccount(const Account& acc) {
+bool AccountStorage::UpdateAccount(const Account& acc) {
     Account* existing = GetByUsername(acc.getUsername());
     if (existing == nullptr) {
         return false;
@@ -99,7 +99,7 @@ bool AccountRepository::UpdateAccount(const Account& acc) {
 }
 
 // Xoa tai khoan khoi he thong va dong bo xuong CSV
-bool AccountRepository::RemoveAccount(const string& username) {
+bool AccountStorage::RemoveAccount(const string& username) {
     if (!accountTable.Remove(username)) {
         return false;
     }
@@ -107,7 +107,6 @@ bool AccountRepository::RemoveAccount(const string& username) {
 }
 
 // Lay toan bo danh sach tai khoan (phuc vu bang quan tri Admin)
-vector<Account> AccountRepository::GetAllAccounts() {
+vector<Account> AccountStorage::GetAllAccounts() {
     return accountTable.GetAllValues<Account>();
 }
-
