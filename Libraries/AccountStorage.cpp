@@ -9,7 +9,7 @@ using namespace std;
 
 AccountStorage::AccountStorage(const string& filePath)
     : dataFilePath(filePath), isLoadedSuccessfully(false) {
-    isLoadedSuccessfully = LoadFromDisk();
+    isLoadedSuccessfully = LoadFromFile();
 }
 
 AccountStorage::~AccountStorage() {
@@ -21,7 +21,7 @@ AccountStorage::~AccountStorage() {
 // =================================================================
 
 // Nap danh sach tai khoan tu CSV len Bang bam RAM
-bool AccountStorage::LoadFromDisk() {
+bool AccountStorage::LoadFromFile() {
     accountTable.Clear();
     vector<Account> loadedList;
     if (!DataManager::LoadAccounts(dataFilePath, loadedList)) {
@@ -36,7 +36,7 @@ bool AccountStorage::LoadFromDisk() {
 }
 
 // Dong bo toan bo tai khoan tu Bang bam xuong tep CSV
-bool AccountStorage::SyncToDisk() {
+bool AccountStorage::SaveToFile() {
     vector<Account> allAccounts = accountTable.GetAllValues();
     return DataManager::SaveAccounts(dataFilePath, allAccounts);
 }
@@ -84,7 +84,7 @@ bool AccountStorage::UpdatePassword(const string& username, const string& newPas
     }
 
     acc->setPassword(newPassword);
-    return SyncToDisk();
+    return SaveToFile();
 }
 
 // Cap nhat thong tin tai khoan va dong bo xuong CSV
@@ -95,7 +95,7 @@ bool AccountStorage::UpdateAccount(const Account& acc) {
     }
 
     *existing = acc;
-    return SyncToDisk();
+    return SaveToFile();
 }
 
 // Xoa tai khoan khoi he thong va dong bo xuong CSV
@@ -103,7 +103,7 @@ bool AccountStorage::RemoveAccount(const string& username) {
     if (!accountTable.Remove(username)) {
         return false;
     }
-    return SyncToDisk();
+    return SaveToFile();
 }
 
 // Lay toan bo danh sach tai khoan (phuc vu bang quan tri Admin)

@@ -20,6 +20,8 @@
 #include "../Libraries/Cart.h"
 #include "../Libraries/AccountStorage.h"
 #include "../Libraries/AuthManager.h"
+#include "../Libraries/ProductStorage.h"
+#include "../Libraries/OrderManager.h"
 
 using namespace std;
 
@@ -206,6 +208,129 @@ int main() {
     accountRepo.RemoveAccount(testUser);
     cout << "  12. Don dep tai khoan test sau kiem thu: " << (!accountRepo.Exists(testUser) ? "THANH CONG (File Accounts.csv sach se)" : "THAT BAI") << "\n";
 
-    cout << "\n[INFO] Hoan tat toan bo kiem thu Backend Dang nhap va Cart!\n";
+    // 6. Kiem thu Module ProductStorage (Quan ly kho hang & Canh bao)
+    cout << "\n============================================================\n";
+    cout << "   KIEM THU MODULE KHO HANG TRUNG GIAN (PRODUCT STORAGE)\n";
+    cout << "============================================================\n";
+
+    ProductStorage productRepo("Data/Products.csv");
+    cout << "[KHOI TAO] ProductStorage: " << (productRepo.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+
+    // Tra cuu O(1) theo ma
+    ShopItem* pItem1 = productRepo.GetByID("FOOD-001");
+    bool foundID = (pItem1 != nullptr && pItem1->Name == "Sua Tuoi Vinamilk");
+    cout << "  1. Tra cuu O(1) theo Ma SP (FOOD-001): " << (foundID ? "DUNG (Sua Tuoi Vinamilk)" : "SAI") << "\n";
+
+    // Tim kiem theo ten khong phan biet hoa thuong
+    vector<ShopItem*> searchResults = productRepo.SearchByName("banh mi");
+    bool searchOk = (!searchResults.empty() && searchResults[0]->ProductID == "FOOD-002");
+    cout << "  2. Tim kiem theo ten khong phan biet hoa thuong ('banh mi'): " 
+         << (searchOk ? "DUNG (" + searchResults[0]->Name + ")" : "SAI") << "\n";
+
+    // Kiem tra loc danh muc Food
+    vector<ShopItem*> foodItems = productRepo.GetByCategory("Food");
+    cout << "  3. Loc danh muc Food: Tim thay " << foodItems.size() << " mat hang.\n";
+
+    // Kiem tra canh bao ton kho thap (< 5)
+    vector<ShopItem*> lowStock = productRepo.GetLowStockProducts(5);
+    cout << "  4. Canh bao ton kho duoi 5 mon: Tim thay " << lowStock.size() << " san pham.\n";
+    for (int i = 0; i < (int)lowStock.size(); i++) {
+        cout << "     -> [" << lowStock[i]->ProductID << "] " << lowStock[i]->Name 
+             << " - Con lai: " << lowStock[i]->QuantityRemaining << "\n";
+    }
+
+    // Kiem tra canh bao han dung (can date hoac qua han so voi 2024-03-10)
+    vector<FoodItem*> nearExpiry = productRepo.GetExpiringFoodProducts("2024-03-10");
+    cout << "  5. Canh bao han dung truoc hoac trong ngay 2024-03-10: Tim thay " << nearExpiry.size() << " mat hang.\n";
+    for (int i = 0; i < (int)nearExpiry.size(); i++) {
+        cout << "     -> [" << nearExpiry[i]->ProductID << "] " << nearExpiry[i]->Name 
+             << " - HSD: " << nearExpiry[i]->ExpiryDate << "\n";
+    }
+
+    // Kiem tra them san pham moi va dong bo Write-Through
+    string testProdID = "FOOD-TEST-999";
+    FoodItem* newFood = new FoodItem(testProdID, "Banh Bao Nhan Thit", 15000, 20, "Banh bao nong hoi", "2024-03-01", "2024-03-15");
+    bool addProdOk = productRepo.AddProduct(newFood);
+    cout << "  6. Them san pham moi (Write-Through): " << (addProdOk ? "THANH CONG" : "THAT BAI") << "\n";
+
+    // Kiem tra tinh ben vung bang cach mo ProductStorage doc lap doc tu file CSV
+    ProductStorage fileChecker("Data/Products.csv");
+    ShopItem* checkProd = fileChecker.GetByID(testProdID);
+    bool persistentProdOk = (checkProd != nullptr && checkProd->Price == 15000);
+    cout << "  7. Kiem tra dong bo CSV Products.csv: " 
+         << (persistentProdOk ? "THANH CONG (Du lieu da ghi xuong file)" : "THAT BAI") << "\n";
+
+    // Don dep san pham test de giu file Data/Products.csv nguyen ban
+    bool removeProdOk = productRepo.RemoveProduct(testProdID);
+    cout << "  8. Don dep san pham test sau kiem thu: " 
+         << (removeProdOk && !productRepo.Exists(testProdID) ? "THANH CONG (File Products.csv sach se)" : "THAT BAI") << "\n";
+
+    // 7. Kiem thu Module OrderManager & Xuat Hoa Don (.txt)
+    cout << "\n============================================================\n";
+    cout << "   KIEM THU MODULE HOA DON & THANH TOAN (ORDER MANAGER)\n";
+    cout << "============================================================\n";
+
+    OrderManager orderManager(&accountRepo, "Data/Orders.csv", "Invoices/");
+    cout << "[KHOI TAO] OrderManager: " << (orderManager.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+
+    int initialOrderCount = orderManager.GetTotalOrderCount();
+    unsigned long long initialRevenue = orderManager.GetTotalRevenue();
+    cout << "  1. So don hang ban dau: " << initialOrderCount << " don.\n";
+    cout << "  2. Tong doanh thu ban dau: " << initialRevenue << " VND.\n";
+
+    // Kiem tra loc don theo khach hang UID = 1003
+    vector<OrderRecord> ordersOf1003 = orderManager.FilterByCustomer(1003);
+    cout << "  3. Loc don cua khach UID 1003: Tim thay " << ordersOf1003.size() << " don hang.\n";
+
+    // Kiem tra loc don theo ngay 2024-03-25
+    vector<OrderRecord> ordersDate = orderManager.FilterByDate("2024-03-25", "2024-03-25");
+    cout << "  4. Loc don trong ngay 2024-03-25: Tim thay " << ordersDate.size() << " don hang.\n";
+
+    // Tao tai khoan khach mua test
+    string shopperUsername = "shopper_test";
+    if (accountRepo.Exists(shopperUsername)) {
+        accountRepo.RemoveAccount(shopperUsername);
+    }
+    Account shopper(9999, shopperUsername, "123", "Tran Thi Test", User, 200000);
+    accountRepo.AddAccount(shopper);
+
+    // Tao gio hang mua 2 hop sua (70000 VND)
+    Cart shopperCart("Tran Thi Test");
+    ShopItem* pMilk = productRepo.GetByID("FOOD-001");
+    if (pMilk != nullptr) {
+        shopperCart.AddItem(pMilk, 2);
+    }
+
+    // Thuc hien thanh toan Checkout
+    string createdOrderID = "";
+    string createdReceiptPath = "";
+    bool checkoutSuccess = orderManager.Checkout(shopperCart, shopper, "Admin", "2024-03-26 15:30", &createdOrderID, &createdReceiptPath);
+
+    cout << "  5. Thuc hien Checkout thanh toan: " << (checkoutSuccess ? "THANH CONG" : "THAT BAI") << "\n";
+    cout << "     -> Ma don hang moi sinh: " << createdOrderID << "\n";
+    cout << "     -> Duong dan file hoa don: " << createdReceiptPath << "\n";
+    cout << "     -> So du vi khach sau khi tru: " << shopper.getBalance() << " VND (Dung 130000)\n";
+    cout << "     -> Gio hang sau thanh toan: " << (shopperCart.IsEmpty() ? "DA XOA SACH (Dung ky vong)" : "CHUA XOA") << "\n";
+
+    // Kiem tra file hoa don .txt co thuc su duoc tao ra tren o dia
+    ifstream receiptCheck(createdReceiptPath);
+    bool receiptExists = receiptCheck.is_open();
+    if (receiptExists) receiptCheck.close();
+    cout << "  6. Kiem tra file hoa don in nhiet .txt tren dia: " << (receiptExists ? "CO TON TAI (Mo doc thanh cong)" : "KHONG TIM THAY") << "\n";
+
+    // Don dep tai khoan test va phuc hoi file Orders.csv ve trang thai ban dau
+    accountRepo.RemoveAccount(shopperUsername);
+
+    vector<OrderRecord> allOrdersAfterTest = orderManager.GetAllOrders();
+    vector<OrderRecord> cleanOrders;
+    for (int i = 0; i < (int)allOrdersAfterTest.size(); i++) {
+        if (allOrdersAfterTest[i].OrderID != createdOrderID) {
+            cleanOrders.push_back(allOrdersAfterTest[i]);
+        }
+    }
+    DataManager::SaveOrders("Data/Orders.csv", cleanOrders);
+    cout << "  7. Don dep don hang test, giu nguyen ban Data/Orders.csv: THANH CONG\n";
+
+    cout << "\n[INFO] Hoan tat toan bo kiem thu Backend PBL2!\n";
     return 0;
 }

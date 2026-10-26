@@ -54,6 +54,11 @@ class Cart : public Entity {
         vector<CartItem> ToVector() const;
         string GetItemsSummary() const;
 
-        // Hien thi giao dien
+        // Hien thi giao dien va xuat hoa don
         void PrintCart() const;
+        bool ExportReceiptTXT(const string& filePath, 
+                              const string& orderID, 
+                              const string& customerName, 
+                              const string& cashierName, 
+                              const string& orderDate) const;
 };

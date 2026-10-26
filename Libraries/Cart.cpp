@@ -1,5 +1,6 @@
 #include "Cart.h"
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 
 using namespace std;
@@ -216,4 +217,62 @@ void Cart::PrintCart() const {
     cout << "--------------------------------------------------------------------------------\n";
     cout << right << setw(65) << "TONG TIEN THANH TOAN: " << setw(13) << grandTotal << " VND\n";
     cout << "================================================================================\n";
+}
+
+// =================================================================
+//  Xuat phieu hoa don ban le ra tep tin .txt (Mo phong in nhiet)
+// =================================================================
+bool Cart::ExportReceiptTXT(const string& filePath, 
+                            const string& orderID, 
+                            const string& customerName, 
+                            const string& cashierName, 
+                            const string& orderDate) const {
+    ofstream outFile(filePath);
+    if (!outFile.is_open()) {
+        return false;
+    }
+
+    outFile << "================================================================================\n";
+    outFile << "                         CUA HANG BAN LE PBL2 STORE\n";
+    outFile << "                   Dia chi: 54 Nguyen Luong Bang, Da Nang\n";
+    outFile << "================================================================================\n";
+    outFile << "  Ma hoa don: " << orderID << "\n";
+    outFile << "  Ngay gio:   " << orderDate << "\n";
+    outFile << "  Khach hang: " << customerName << "\n";
+    outFile << "  Thu ngan:   " << cashierName << "\n";
+    outFile << "--------------------------------------------------------------------------------\n";
+    outFile << left << setw(5) << "STT"
+            << setw(12) << "Ma SP"
+            << setw(32) << "Ten San Pham"
+            << right << setw(10) << "Don Gia"
+            << setw(6) << "SL"
+            << setw(13) << "Thanh Tien" << "\n";
+    outFile << "--------------------------------------------------------------------------------\n";
+
+    Node<CartItem>* curr = head;
+    int index = 1;
+    long long grandTotal = 0;
+
+    while (curr != nullptr) {
+        const CartItem& item = curr->value;
+        outFile << left << setw(5) << index
+                << setw(12) << item.ProductID
+                << setw(32) << item.ProductName
+                << right << setw(10) << item.UnitPrice
+                << setw(6) << item.Quantity
+                << setw(13) << item.SubTotal << "\n";
+        grandTotal += item.SubTotal;
+        index++;
+        curr = curr->next;
+    }
+
+    outFile << "--------------------------------------------------------------------------------\n";
+    outFile << right << setw(65) << "TONG TIEN THANH TOAN: " << setw(13) << grandTotal << " VND\n";
+    outFile << "  Phuong thuc: Tru so du vi tai khoan (Giao dich thanh cong)\n";
+    outFile << "================================================================================\n";
+    outFile << "                       CAM ON QUY KHACH VA HEN GAP LAI!\n";
+    outFile << "================================================================================\n";
+
+    outFile.close();
+    return true;
 }

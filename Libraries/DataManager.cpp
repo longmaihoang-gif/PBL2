@@ -330,3 +330,24 @@ bool DataManager::AppendOrder(const string &filePath, const OrderRecord &order) 
 
     return AppendCSVRow(filePath, row);
 }
+
+// Ghi de toan bo danh sach don hang xuong CSV
+bool DataManager::SaveOrders(const string &filePath, const vector<OrderRecord> &orderList) {
+    string header = "OrderID,UID,CustomerName,OrderDate,TotalAmount,ItemsSummary";
+    vector<vector<string>> rows;
+
+    int count = (int)orderList.size();
+    for (int i = 0; i < count; i++) {
+        const OrderRecord &ord = orderList[i];
+        vector<string> row;
+        row.push_back(ord.OrderID);
+        row.push_back(to_string(ord.UID));
+        row.push_back(ord.CustomerName);
+        row.push_back(ord.OrderDate);
+        row.push_back(to_string(ord.TotalAmount));
+        row.push_back(ord.ItemsSummary);
+        rows.push_back(row);
+    }
+
+    return WriteCSV(filePath, header, rows);
+}

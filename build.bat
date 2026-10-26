@@ -38,6 +38,8 @@ g++ -std=c++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     Libraries/HashTable.cpp ^
     Libraries/AccountStorage.cpp ^
     Libraries/AuthManager.cpp ^
+    Libraries/ProductStorage.cpp ^
+    Libraries/OrderManager.cpp ^
     Libraries/imgui-master/imgui.cpp ^
     Libraries/imgui-master/imgui_draw.cpp ^
     Libraries/imgui-master/imgui_tables.cpp ^

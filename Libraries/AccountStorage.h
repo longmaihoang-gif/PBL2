@@ -18,10 +18,10 @@ private:
     bool isLoadedSuccessfully;      // Trang thai nap du lieu ban dau
 
     // Nap du lieu tu tep CSV vao bang bam RAM
-    bool LoadFromDisk();
+    bool LoadFromFile();
 
     // Dong bo toan bo du lieu tu bang bam xuong tep CSV
-    bool SyncToDisk();
+    bool SaveToFile();
 
 public:
     // Khoi tao va tu dong nap du lieu tu tep tin

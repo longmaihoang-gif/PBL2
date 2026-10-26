@@ -61,5 +61,6 @@ public:
     // Quan ly Hoa don & Doanh thu (Orders)
     // =============================================================
     static bool LoadOrders(const string &filePath, vector<OrderRecord> &orderList);
+    static bool SaveOrders(const string &filePath, const vector<OrderRecord> &orderList);
     static bool AppendOrder(const string &filePath, const OrderRecord &order);
 };

@@ -24,7 +24,11 @@ PBL2/
 │   ├── AccountStorage.h      # Khai báo kho trung gian đồng bộ HashTable và CSV
 │   ├── AccountStorage.cpp    # Hiện thực quản lý dữ liệu tài khoản và Write-Through
 │   ├── AuthManager.h         # Khai báo bộ điều phối xác thực và phiên làm việc
-│   └── AuthManager.cpp       # Hiện thực đăng nhập, đăng xuất, phân quyền O(1)
+│   ├── AuthManager.cpp       # Hiện thực đăng nhập, đăng xuất, phân quyền O(1)
+│   ├── ProductStorage.h      # Khai báo kho trung gian quản lý sản phẩm và đồng bộ CSV
+│   ├── ProductStorage.cpp    # Hiện thực quản lý kho hàng, cảnh báo tồn kho và cận date
+│   ├── OrderManager.h        # Khai báo bộ điều phối thanh toán và phân tích doanh thu
+│   └── OrderManager.cpp      # Hiện thực Checkout, sinh mã hóa đơn và lọc báo cáo
 ├── src/                 # Mã nguồn ứng dụng chính
 │   ├── Main.cpp         # Điểm khởi chạy chương trình kiểm thử console
 │   └── UI.cpp           # Giao diện đồ họa Dear ImGui & GLFW
@@ -32,6 +36,7 @@ PBL2/
 │   ├── Accounts.csv     # Cơ sở dữ liệu tài khoản
 │   ├── Products.csv     # Cơ sở dữ liệu danh mục hàng hóa
 │   └── Orders.csv       # Cơ sở dữ liệu lịch sử đơn hàng
+├── Invoices/            # Thư mục lưu trữ phiếu in hóa đơn bán lẻ (.txt) in nhiệt
 ├── build.bat            # Kịch bản tự động biên dịch và khởi chạy dự án
 ├── Idea.md              # Tài liệu phân tích yêu cầu & thiết kế tính năng
 └── Walkthrough.md       # Báo cáo tổng kết tiến độ và kiến trúc kỹ thuật
@@ -115,17 +120,47 @@ PBL2/
 
 ---
 
-### 8. Tích Hợp & Kịch Bản Kiểm Thử Toàn Diện (`src/Main.cpp`)
+### 8. Module Kho Lưu Trữ Hàng Hóa & Cảnh Báo (`ProductStorage`)
+- **Mục đích:** Đóng vai trò lớp Repository quản lý danh mục sản phẩm trên RAM bằng `HashTable<ShopItem*>` và tự động đồng bộ xuống tệp `Data/Products.csv`.
+- **Cơ chế Ghi xuyên thấu (Write-Through Persistence):** Mọi thao tác thêm sản phẩm mới (`AddProduct`), sửa thông tin/giá (`UpdateProduct`, `UpdatePrice`), cập nhật tồn kho (`UpdateQuantity`) hoặc xóa sản phẩm (`RemoveProduct`) đều được đồng bộ tức thì xuống đĩa cứng.
+- **Quản lý bộ nhớ đa hình an toàn:** `ProductStorage` chịu trách nhiệm thu hồi `delete` toàn bộ con trỏ `ShopItem*` trên Heap khi hủy đối tượng hoặc khi xóa sản phẩm, loại bỏ triệt để nguy cơ rò rỉ bộ nhớ.
+- **Bộ lọc & Cảnh báo thông minh:**
+  - Tra cứu O(1) theo `ProductID` và tìm kiếm tương đối không phân biệt hoa thường theo `Tên SP` (`SearchByName`).
+  - Lọc theo phân loại hàng hóa (`GetByCategory`).
+  - Cảnh báo tồn kho thấp dưới ngưỡng quy định (`GetLowStockProducts` với ngưỡng mặc định < 5).
+  - Cảnh báo thực phẩm cận date hoặc đã quá hạn (`GetExpiringFoodProducts`), sử dụng thuật toán bóc tách chuỗi ngày tháng sang số nguyên `int` (`substr` + `stoi`) để bảo đảm độ chính xác 100%, không phụ thuộc độ dài năm.
+
+---
+
+### 9. Module Quản Lý Hóa Đơn, Thanh Toán & In Nhiệt (`OrderManager` & `Cart`)
+- **Mục đích:** Đóng vai trò lớp điều phối quy trình mua bán (Point of Sale - POS), liên kết giữa giỏ hàng `Cart`, ví tiền người mua `Wallet`, cơ sở dữ liệu `Orders.csv` và hệ thống in phiếu hóa đơn bán lẻ.
+- **Quy trình Thanh toán Khép kín (Checkout Flow):**
+  - Kiểm tra giỏ hàng và kiểm tra tính hợp lệ của số dư ví tiền người mua (`customer.costBalance`).
+  - Tự động đồng bộ số dư ví mới xuống `Data/Accounts.csv` qua `AccountStorage`.
+  - Tự động sinh mã hóa đơn theo quy tắc số thứ tự tăng dần (`ORD1001`, `ORD1002`, `ORD1003`...).
+  - Ghi nối tiếp thông tin đơn hàng vào `Data/Orders.csv`.
+  - Sinh tệp phiếu hóa đơn bán lẻ dạng văn bản `.txt` mô phỏng máy in nhiệt tại quầy lưu vào thư mục `Invoices/HD_ORDxxxx.txt`, sử dụng căn lề chuẩn `<iomanip>`.
+  - Làm sạch giỏ hàng `cart.Clear(nullptr)` mà không hoàn trả lại tồn kho vì giao dịch đã hoàn tất.
+- **Báo cáo & Phân tích Doanh thu (Analytics):**
+  - Tính tổng doanh thu toàn cửa hàng (`GetTotalRevenue`) và đếm tổng số lượng đơn hàng (`GetTotalOrderCount`).
+  - Lọc đơn hàng theo khoảng ngày tháng bắt đầu và kết thúc (`FilterByDate`), hỗ trợ xem doanh số theo ngày/tuần/tháng.
+  - Lọc lịch sử đơn hàng theo mã định danh khách hàng (`FilterByCustomer`), phục vụ hiển thị lịch sử mua hàng cá nhân của người dùng.
+
+---
+
+### 10. Tích Hợp & Kịch Bản Kiểm Thử Toàn Diện (`src/Main.cpp`)
 - Đã liên kết đầy đủ toàn bộ các thư viện nội bộ của dự án.
 - Tự động nạp dữ liệu từ thư mục `Data/` vào `HashTable`.
 - Tích hợp kịch bản kiểm thử toàn diện:
   1. **Module Giỏ hàng & Hoàn tác:** Thêm món, kiểm tra vượt tồn kho, hoàn tác LIFO 2 lần, thêm món mới sau hoàn tác, hủy giỏ hàng và khôi phục tồn kho.
   2. **Module Xác thực & Kho tài khoản:** 12 ca kiểm thử tự động (đăng nhập rỗng, tài khoản không tồn tại, sai mật khẩu, đăng nhập Admin thành công, đăng xuất, đăng ký mới, chặn trùng tên, đăng nhập tài khoản mới, đổi mật khẩu, kiểm tra tính bền vững từ file CSV, dọn dẹp dữ liệu kiểm thử giữ nguyên bản file `Accounts.csv`).
+  3. **Module Kho hàng & Cảnh báo:** 8 ca kiểm thử tự động (tra cứu O(1) theo mã, tìm kiếm theo tên không phân biệt hoa thường, lọc danh mục Food, lọc cảnh báo tồn kho < 5, lọc cảnh báo thực phẩm cận date, thêm mới sản phẩm đa hình và đồng bộ Write-Through, kiểm tra tính bền vững từ file CSV độc lập, dọn dẹp sản phẩm kiểm thử giữ nguyên bản file `Products.csv`).
+  4. **Module Hóa đơn & Thanh toán:** 7 ca kiểm thử tự động (nạp lịch sử đơn hàng, tính tổng doanh thu ban đầu, lọc đơn theo ngày và theo khách hàng, thực hiện quy trình Checkout khép kín, kiểm tra trừ ví tiền, kiểm tra tệp hóa đơn in nhiệt `.txt` sinh ra trong `Invoices/`, dọn dẹp đơn kiểm thử bảo toàn `Orders.csv`).
 
 ---
 
 ## 🎯 III. Kế Hoạch Tiếp Theo
-1. Thiết kế giao diện đăng nhập trực tiếp (Menu CLI điều hướng hoặc màn hình đăng nhập đồ họa trên Dear ImGui).
-2. Phân luồng tính năng theo phiên làm việc: giao diện quản trị kho & doanh thu cho `Admin`, giao diện xem hàng & mua sắm cho `User`.
-3. Hoàn thiện tính năng thanh toán (trừ số dư ví tiền `Wallet`, chốt đơn vào `Orders.csv`, cập nhật tồn kho `Products.csv`).
-4. Xuất hóa đơn bán lẻ dạng file `.txt` mô phỏng hóa đơn in nhiệt tại quầy.
+1. Thiết kế giao diện đăng nhập trực tiếp (Màn hình đăng nhập đồ họa trên Dear ImGui kết nối `AuthManager`).
+2. Phân luồng tính năng giao diện theo quyền:
+   - Giao diện Admin: Quản trị kho hàng (`ProductStorage`), xem cảnh báo tồn kho < 5, xem cảnh báo cận date, xem bảng doanh thu và lịch sử đơn hàng (`OrderManager`).
+   - Giao diện User: Xem danh mục sản phẩm theo thẻ/bảng, giỏ hàng bán lẻ (`Cart`), thực hiện thanh toán trừ ví và xem phiếu in nhiệt (`Invoices/`), xem lịch sử mua sắm cá nhân.
