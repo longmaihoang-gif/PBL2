@@ -1,34 +1,47 @@
 #pragma once
-#include <any>
-
-using namespace std;
 
 // =================================================================
-// NODE: Nút danh sách liên kết đôi
+// NODE: Nut danh sach lien ket doi dung Template
 // =================================================================
-struct Node {
-    public:
-        any value;
-        Node *prev; // Con trỏ trỏ về nút trước (prev)
-        Node *next; // Con trỏ trỏ tới nút sau (next)
-
-        Node(any val = any(), Node *prevNode = nullptr, Node *nextNode = nullptr)
-            : value(val), prev(prevNode), next(nextNode) {}
-
-        ~Node() {}
-
-        void Insert(Node *target);
-        void Remove();
-
-        // Ép kiểu nhanh giá trị (Trả về con trỏ, nullptr nếu sai kiểu)
-        template <typename T>
-        T* Get();
-};
-
-// ============================================================
-// Triển khai Template đặt ở đáy file Header
-// ============================================================
 template <typename T>
-inline T* Node::Get() {
-    return any_cast<T>(&value);
-}
+struct Node {
+    T value;
+    Node<T>* prev; // Con tro tro ve nut truoc (prev)
+    Node<T>* next; // Con tro tro toi nut sau (next)
+
+    Node(const T& val = T(), Node<T>* prevNode = nullptr, Node<T>* nextNode = nullptr)
+        : value(val), prev(prevNode), next(nextNode) {}
+
+    ~Node() {}
+
+    // Chen target vao ngay sau nut hien tai (Insert After)
+    void Insert(Node<T>* target) {
+        if (target == nullptr || target == this) {
+            return;
+        }
+
+        Node<T>* oldNext = this->next;
+
+        this->next = target;
+        target->prev = this;
+
+        target->next = oldNext;
+        if (oldNext != nullptr) {
+            oldNext->prev = target;
+        }
+    }
+
+    // Tu ngat lien ket nut hien tai khoi chuoi (Remove Self)
+    void Remove() {
+        if (this->prev != nullptr) {
+            this->prev->next = this->next;
+        }
+
+        if (this->next != nullptr) {
+            this->next->prev = this->prev;
+        }
+
+        this->prev = nullptr;
+        this->next = nullptr;
+    }
+};

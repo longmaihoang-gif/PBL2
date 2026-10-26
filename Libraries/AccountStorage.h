@@ -7,48 +7,48 @@
 using namespace std;
 
 // =================================================================
-//  ACCOUNT STORAGE: Hệ thống trung gian quản lý dữ liệu tài khoản
-//  - Đóng vai trò cầu nối duy nhất giữa Bảng băm (RAM) và Tệp CSV (Disk)
-//  - Áp dụng cơ chế Write-Through đảm bảo không xung đột dữ liệu
+//  ACCOUNT STORAGE: He thong trung gian quan ly du lieu tai khoan
+//  - Dong vai tro cau noi duy nhat giua Bang bam (RAM) va Tep CSV (Disk)
+//  - Ap dung co che Write-Through dam bao khong xung dot du lieu
 // =================================================================
 class AccountStorage {
 private:
-    HashTable accountTable;         // Bảng băm lưu trữ tài khoản trên RAM (Tra cứu O(1))
-    string dataFilePath;            // Đường dẫn tệp CSV dữ liệu tài khoản
-    bool isLoadedSuccessfully;      // Trạng thái nạp dữ liệu ban đầu
+    HashTable<Account> accountTable; // Bang bam luu tru tai khoan tren RAM (Tra cuu O(1))
+    string dataFilePath;            // Duong dan tep CSV du lieu tai khoan
+    bool isLoadedSuccessfully;      // Trang thai nap du lieu ban dau
 
-    // Nạp dữ liệu từ tệp CSV vào bảng băm RAM
+    // Nap du lieu tu tep CSV vao bang bam RAM
     bool LoadFromDisk();
 
-    // Đồng bộ toàn bộ dữ liệu từ bảng băm xuống tệp CSV
+    // Dong bo toan bo du lieu tu bang bam xuong tep CSV
     bool SyncToDisk();
 
 public:
-    // Khởi tạo và tự động nạp dữ liệu từ tệp tin
+    // Khoi tao va tu dong nap du lieu tu tep tin
     AccountStorage(const string& filePath = "Data/Accounts.csv");
     ~AccountStorage();
 
-    // Kiểm tra trạng thái nạp dữ liệu từ tệp
+    // Kiem tra trang thai nap du lieu tu tep
     bool IsLoaded() const { return isLoadedSuccessfully; }
 
-    // Tra cứu tài khoản theo tên đăng nhập (Độ phức tạp O(1))
+    // Tra cuu tai khoan theo ten dang nhap (Do phuc tap O(1))
     Account* GetByUsername(const string& username);
 
-    // Kiểm tra tài khoản có tồn tại trong hệ thống hay không
+    // Kiem tra tai khoan co ton tai trong he thong hay khong
     bool Exists(const string& username);
 
-    // Thêm tài khoản mới (Ghi đồng thời vào RAM và tệp CSV)
+    // Them tai khoan moi (Ghi dong thoi vao RAM va tep CSV)
     bool AddAccount(const Account& acc);
 
-    // Cập nhật mật khẩu cho tài khoản và đồng bộ xuống tệp CSV
+    // Cap nhat mat khau cho tai khoan va dong bo xuong tep CSV
     bool UpdatePassword(const string& username, const string& newPassword);
 
-    // Cập nhật toàn bộ thông tin tài khoản và đồng bộ xuống tệp CSV
+    // Cap nhat toan bo thong tin tai khoan va dong bo xuong tep CSV
     bool UpdateAccount(const Account& acc);
 
-    // Xóa tài khoản khỏi hệ thống và đồng bộ xuống tệp CSV
+    // Xoa tai khoan khoi he thong va dong bo xuong tep CSV
     bool RemoveAccount(const string& username);
 
-    // Trích xuất toàn bộ danh sách tài khoản phục vụ hiển thị bảng
+    // Trich xuat toan bo danh sach tai khoan phuc vu hien thi bang
     vector<Account> GetAllAccounts();
 };

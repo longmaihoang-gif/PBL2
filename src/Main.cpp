@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <any>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -35,8 +34,8 @@ int main() {
     cout << "============================================================\n\n";
 
     // 1. Khoi tao cac cau truc du lieu trong bo nho
-    HashTable accountTable;
-    HashTable productTable;
+    HashTable<Account> accountTable;
+    HashTable<ShopItem*> productTable;
     vector<Account> accountList;
     vector<ShopItem*> productList;
     vector<OrderRecord> orderList;

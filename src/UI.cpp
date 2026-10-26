@@ -59,7 +59,7 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    // 3. Vòng lặp render chính (Khung trống để Sensei lập trình UI)
+    // 3. Vong lap render chinh (Khung khoi tao giao dien ImGui)
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 

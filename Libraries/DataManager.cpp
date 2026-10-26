@@ -182,7 +182,7 @@ bool DataManager::SaveAccounts(const string &filePath, const vector<Account> &ac
 }
 
 // Nap tai khoan vao Bang bam (HashTable)
-bool DataManager::LoadAccountsToTable(const string &filePath, HashTable &accountTable, vector<Account> &accountList) {
+bool DataManager::LoadAccountsToTable(const string &filePath, HashTable<Account> &accountTable, vector<Account> &accountList) {
     if (!LoadAccounts(filePath, accountList)) return false;
 
     int count = (int)accountList.size();
@@ -281,7 +281,7 @@ bool DataManager::SaveProducts(const string &filePath, const vector<ShopItem*> &
 }
 
 // Nap san pham vao Bang bam (HashTable)
-bool DataManager::LoadProductsToTable(const string &filePath, HashTable &productTable, vector<ShopItem*> &productList) {
+bool DataManager::LoadProductsToTable(const string &filePath, HashTable<ShopItem*> &productTable, vector<ShopItem*> &productList) {
     if (!LoadProducts(filePath, productList)) return false;
 
     int count = (int)productList.size();

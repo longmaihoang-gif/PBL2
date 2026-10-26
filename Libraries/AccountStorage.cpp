@@ -37,7 +37,7 @@ bool AccountStorage::LoadFromDisk() {
 
 // Dong bo toan bo tai khoan tu Bang bam xuong tep CSV
 bool AccountStorage::SyncToDisk() {
-    vector<Account> allAccounts = accountTable.GetAllValues<Account>();
+    vector<Account> allAccounts = accountTable.GetAllValues();
     return DataManager::SaveAccounts(dataFilePath, allAccounts);
 }
 
@@ -47,7 +47,7 @@ bool AccountStorage::SyncToDisk() {
 
 // Tra cuu tai khoan theo username voi thoi gian trung binh O(1)
 Account* AccountStorage::GetByUsername(const string& username) {
-    return accountTable.Get<Account>(username);
+    return accountTable.Search(username);
 }
 
 // Kiem tra su ton tai cua ten dang nhap
@@ -108,5 +108,5 @@ bool AccountStorage::RemoveAccount(const string& username) {
 
 // Lay toan bo danh sach tai khoan (phuc vu bang quan tri Admin)
 vector<Account> AccountStorage::GetAllAccounts() {
-    return accountTable.GetAllValues<Account>();
+    return accountTable.GetAllValues();
 }

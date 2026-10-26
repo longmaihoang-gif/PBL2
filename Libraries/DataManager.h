@@ -48,14 +48,14 @@ public:
     // =============================================================
     static bool LoadAccounts(const string &filePath, vector<Account> &accountList);
     static bool SaveAccounts(const string &filePath, const vector<Account> &accountList);
-    static bool LoadAccountsToTable(const string &filePath, HashTable &accountTable, vector<Account> &accountList);
+    static bool LoadAccountsToTable(const string &filePath, HashTable<Account> &accountTable, vector<Account> &accountList);
 
     // =============================================================
     // Quan ly San pham & Kho hang (Products)
     // =============================================================
     static bool LoadProducts(const string &filePath, vector<ShopItem*> &productList);
     static bool SaveProducts(const string &filePath, const vector<ShopItem*> &productList);
-    static bool LoadProductsToTable(const string &filePath, HashTable &productTable, vector<ShopItem*> &productList);
+    static bool LoadProductsToTable(const string &filePath, HashTable<ShopItem*> &productTable, vector<ShopItem*> &productList);
 
     // =============================================================
     // Quan ly Hoa don & Doanh thu (Orders)

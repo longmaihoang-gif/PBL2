@@ -26,13 +26,13 @@ struct CartItem {
 };
 
 // =================================================================
-//  CART: Gio hang ban le ke thua Entity, su dung DLinkedList
+//  CART: Gio hang ban le ke thua Entity, su dung Node<CartItem>
 // =================================================================
 class Cart : public Entity {
     private:
-        Node* head;          // Con tro quan ly nut dau gio hang
-        Node* tail;          // Con tro quan ly nut cuoi (dong vai tro dinh Undo)
-        int totalItems;      // Tong so loai mat hang trong gio
+        Node<CartItem>* head;    // Con tro quan ly nut dau gio hang
+        Node<CartItem>* tail;    // Con tro quan ly nut cuoi (dong vai tro dinh Undo)
+        int totalItems;          // Tong so loai mat hang trong gio
 
         // Khai bao private de ngan chan sao chep ngam gay loi double-free
         Cart(const Cart&);
@@ -44,8 +44,8 @@ class Cart : public Entity {
 
         // Nghiep vu gio hang & Undo
         bool AddItem(ShopItem* product, int quantity);
-        bool Undo(HashTable &productTable, CartItem &undoneItem);
-        void Clear(HashTable *productTableToRestore = nullptr);
+        bool Undo(HashTable<ShopItem*> &productTable, CartItem &undoneItem);
+        void Clear(HashTable<ShopItem*> *productTableToRestore = nullptr);
 
         // Truy xuat thong tin
         long long GetTotalAmount() const;

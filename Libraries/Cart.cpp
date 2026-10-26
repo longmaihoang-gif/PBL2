@@ -35,8 +35,8 @@ bool Cart::AddItem(ShopItem* product, int quantity) {
     // Tao du lieu muc gio hang
     CartItem item(product->ProductID, product->Name, product->Category, quantity, product->Price);
 
-    // Tao node moi bao dong gia tri CartItem
-    Node* newNode = new Node(item);
+    // Tao node moi su dung Node<CartItem>
+    Node<CartItem>* newNode = new Node<CartItem>(item);
 
     // Chen node moi vao cuoi danh sach lien ket doi
     if (head == nullptr) {
@@ -54,27 +54,22 @@ bool Cart::AddItem(ShopItem* product, int quantity) {
 // =================================================================
 //  Hoan tac thao tac them gan nhat (Undo LIFO)
 // =================================================================
-bool Cart::Undo(HashTable &productTable, CartItem &undoneItem) {
+bool Cart::Undo(HashTable<ShopItem*> &productTable, CartItem &undoneItem) {
     if (IsEmpty()) {
         return false;
     }
 
     // Lay du lieu muc gio hang o cuoi danh sach (tail)
-    CartItem* itemPtr = tail->Get<CartItem>();
-    if (itemPtr == nullptr) {
-        return false;
-    }
-
-    undoneItem = *itemPtr;
+    undoneItem = tail->value;
 
     // Hoan tra lai so luong ton kho cho san pham trong HashTable
-    ShopItem** pProduct = productTable.Get<ShopItem*>(undoneItem.ProductID);
+    ShopItem** pProduct = productTable.Search(undoneItem.ProductID);
     if (pProduct != nullptr && *pProduct != nullptr) {
         (*pProduct)->QuantityRemaining += undoneItem.Quantity;
     }
 
     // Ngat ket noi va thu hoi node o duoi danh sach
-    Node* toDelete = tail;
+    Node<CartItem>* toDelete = tail;
     tail = tail->prev;
 
     toDelete->Remove();
@@ -92,20 +87,17 @@ bool Cart::Undo(HashTable &productTable, CartItem &undoneItem) {
 // =================================================================
 //  Don dep gio hang (Ho tro tuy chon hoan tra ton kho)
 // =================================================================
-void Cart::Clear(HashTable *productTableToRestore) {
-    Node* curr = head;
+void Cart::Clear(HashTable<ShopItem*> *productTableToRestore) {
+    Node<CartItem>* curr = head;
 
     while (curr != nullptr) {
-        Node* nextNode = curr->next;
+        Node<CartItem>* nextNode = curr->next;
 
         // Neu co yeu cau hoan tra ton kho (truong hop huy gio hang truoc khi thanh toan)
         if (productTableToRestore != nullptr) {
-            CartItem* itemPtr = curr->Get<CartItem>();
-            if (itemPtr != nullptr) {
-                ShopItem** pProduct = productTableToRestore->Get<ShopItem*>(itemPtr->ProductID);
-                if (pProduct != nullptr && *pProduct != nullptr) {
-                    (*pProduct)->QuantityRemaining += itemPtr->Quantity;
-                }
+            ShopItem** pProduct = productTableToRestore->Search(curr->value.ProductID);
+            if (pProduct != nullptr && *pProduct != nullptr) {
+                (*pProduct)->QuantityRemaining += curr->value.Quantity;
             }
         }
 
@@ -123,13 +115,10 @@ void Cart::Clear(HashTable *productTableToRestore) {
 // =================================================================
 long long Cart::GetTotalAmount() const {
     long long total = 0;
-    Node* curr = head;
+    Node<CartItem>* curr = head;
 
     while (curr != nullptr) {
-        CartItem* itemPtr = curr->Get<CartItem>();
-        if (itemPtr != nullptr) {
-            total += itemPtr->SubTotal;
-        }
+        total += curr->value.SubTotal;
         curr = curr->next;
     }
 
@@ -155,13 +144,10 @@ bool Cart::IsEmpty() const {
 // =================================================================
 vector<CartItem> Cart::ToVector() const {
     vector<CartItem> list;
-    Node* curr = head;
+    Node<CartItem>* curr = head;
 
     while (curr != nullptr) {
-        CartItem* itemPtr = curr->Get<CartItem>();
-        if (itemPtr != nullptr) {
-            list.push_back(*itemPtr);
-        }
+        list.push_back(curr->value);
         curr = curr->next;
     }
 
@@ -173,18 +159,15 @@ vector<CartItem> Cart::ToVector() const {
 // =================================================================
 string Cart::GetItemsSummary() const {
     string summary = "";
-    Node* curr = head;
+    Node<CartItem>* curr = head;
     bool isFirst = true;
 
     while (curr != nullptr) {
-        CartItem* itemPtr = curr->Get<CartItem>();
-        if (itemPtr != nullptr) {
-            if (!isFirst) {
-                summary += "; ";
-            }
-            summary += itemPtr->ProductName + " (x" + to_string(itemPtr->Quantity) + ")";
-            isFirst = false;
+        if (!isFirst) {
+            summary += "; ";
         }
+        summary += curr->value.ProductName + " (x" + to_string(curr->value.Quantity) + ")";
+        isFirst = false;
         curr = curr->next;
     }
 
@@ -213,22 +196,20 @@ void Cart::PrintCart() const {
          << setw(13) << "Thanh Tien" << "\n";
     cout << "--------------------------------------------------------------------------------\n";
 
-    Node* curr = head;
+    Node<CartItem>* curr = head;
     int index = 1;
     long long grandTotal = 0;
 
     while (curr != nullptr) {
-        CartItem* item = curr->Get<CartItem>();
-        if (item != nullptr) {
-            cout << left << setw(5) << index
-                 << setw(12) << item->ProductID
-                 << setw(32) << item->ProductName
-                 << right << setw(10) << item->UnitPrice
-                 << setw(6) << item->Quantity
-                 << setw(13) << item->SubTotal << "\n";
-            grandTotal += item->SubTotal;
-            index++;
-        }
+        const CartItem& item = curr->value;
+        cout << left << setw(5) << index
+             << setw(12) << item.ProductID
+             << setw(32) << item.ProductName
+             << right << setw(10) << item.UnitPrice
+             << setw(6) << item.Quantity
+             << setw(13) << item.SubTotal << "\n";
+        grandTotal += item.SubTotal;
+        index++;
         curr = curr->next;
     }
 

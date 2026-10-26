@@ -42,28 +42,29 @@ PBL2/
 ## ⚙️ II. Các Module & Cấu Trúc Dữ Liệu Đã Hoàn Thành
 
 ### 1. Bảng Băm Tự Cài Đặt 100% (`HashTable`)
-- **Mục đích:** Quản lý kho hàng (tra cứu theo `MaSP`) và tài khoản (tra cứu theo `UID` / `Username`) với độ phức tạp $O(1)$.
-- **Phương pháp giải quyết đụng độ:** **Separate Chaining** kết hợp **Danh sách liên kết đôi** (`HashNode` gồm `key`, `value` (`std::any`), con trỏ `next` và `prev`).
+- **Mục đích:** Quản lý kho hàng (tra cứu theo `MaSP`) và tài khoản (tra cứu theo `UID` / `Username`) với độ phức tạp O(1).
+- **Mô hình Template:** Triển khai dưới dạng `template <typename T> class HashTable`, lưu trữ giá trị kiểu `T` tổng quát theo cặp `(key, value)`. Triệt tiêu hoàn toàn sự phụ thuộc vào `std::any`, đảm bảo an toàn kiểu tại thời điểm biên dịch (Compile-time Type Safety).
+- **Phương pháp giải quyết đụng độ:** **Separate Chaining** kết hợp **Danh sách liên kết đôi** (`HashNode<T>` gồm `key`, `value` kiểu `T`, con trỏ `next` và `prev`).
 - **Giải thuật băm:** Sử dụng thuật toán băm **DJB2** tối ưu với kiểu `unsigned char` đảm bảo an toàn phân tán chuỗi ký tự.
 - **Cơ chế Tái băm (Rehash):**
-  - Giám sát hệ số tải (Load Factor threshold mặc định $0.75$).
-  - Tự động mở rộng dung lượng mảng bucket ($2 \times capacity + 1$).
+  - Giám sát hệ số tải (Load Factor threshold mặc định 0.75).
+  - Tự động mở rộng dung lượng mảng bucket (2 * capacity + 1).
   - Tái sử dụng trực tiếp các node cũ sang mảng mới, tối ưu hóa bộ nhớ và tốc độ CPU.
 - **An toàn bộ nhớ & Nguyên tắc thiết kế:**
-  - Áp dụng kỹ thuật cấm sao chép ngầm (`= delete` đối với Copy Constructor và Copy Assignment Operator) nhằm triệt tiêu hoàn toàn nguy cơ **Double-Free**.
+  - Khai báo private Copy Constructor và Copy Assignment Operator nhằm triệt tiêu hoàn toàn nguy cơ **Double-Free**.
   - Destructor thu hồi toàn bộ các node con trỏ, không gây rò rỉ bộ nhớ (Memory Leak).
-  - Hỗ trợ hàm tiện ích mẫu `get<T>(key)` ép kiểu an toàn từ `std::any` về con trỏ `T*` (trả về `nullptr` nếu sai kiểu, tránh ngoại lệ ngắt chương trình).
+  - Cung cấp các phương thức cốt lõi: `Insert(key, value)`, `Search(key)`, `Remove(key)`, `Contains(key)`, `Clear()`, `GetAllValues()`.
 
 ---
 
 ### 2. Danh Sách Liên Kết Đôi Độc Lập (`DLinkedList / Node`)
 - **Mục đích:** Quản lý giỏ hàng mua sắm và hỗ trợ tính năng **Hoàn tác (Undo)** đơn hàng linh hoạt.
-- **Mô hình triển khai:** Cấu trúc `Node` độc lập, gọn nhẹ:
-  - Thành viên: `any value`, con trỏ `Node* p` (nút trước) và `Node* n` (nút sau).
+- **Mô hình Template:** Cấu trúc `Node<T>` độc lập, gọn nhẹ:
+  - Thành viên: `T value`, con trỏ `Node<T>* prev` (nút trước) và `Node<T>* next` (nút sau).
   - Constructor đa năng với tham số mặc định, hỗ trợ khởi tạo từ 0 đến 3 tham số.
-  - `Insert(Node* target)`: Chèn một node mục tiêu vào ngay sau node hiện tại, cập nhật liên kết 2 chiều.
+  - `Insert(Node<T>* target)`: Chèn một node mục tiêu vào ngay sau node hiện tại, cập nhật liên kết 2 chiều.
   - `Remove()`: Tự cô lập và ngắt liên kết của node ra khỏi chuỗi một cách an toàn.
-  - Hỗ trợ hàm mẫu `get<T>()` truy xuất và ép kiểu giá trị bên trong node.
+  - Tương thích trực quan với mọi kiểu dữ liệu (như `Node<CartItem>`), loại bỏ chi phí ép kiểu động lúc chạy.
 
 ---
 
