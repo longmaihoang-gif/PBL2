@@ -7,28 +7,24 @@ using namespace std;
 //  CONSTRUCTOR & DESTRUCTOR
 // =================================================================
 
-OrderManager::OrderManager(AccountStorage* accStorage, const string& filePath, const string& invoiceDir)
-    : accountStorage(accStorage), dataFilePath(filePath), invoiceFolderPath(invoiceDir), isLoadedSuccessfully(false) {
-    // Dam bao duong dan thu muc hoa don co dau gach o cuoi
+// Khoi tao quan ly don hang (Nhan con tro OrderStorage va AccountStorage tu ngoai vao)
+OrderManager::OrderManager(OrderStorage* ordStorage, AccountStorage* accStorage, const string& invoiceDir)
+    : orderStorage(ordStorage), accountStorage(accStorage), invoiceFolderPath(invoiceDir) {
     if (!invoiceFolderPath.empty() && invoiceFolderPath.back() != '/' && invoiceFolderPath.back() != '\\') {
         invoiceFolderPath += "/";
     }
-
-    isLoadedSuccessfully = LoadFromFile();
 }
 
 OrderManager::~OrderManager() {
 }
 
+bool OrderManager::IsLoaded() const {
+    return (orderStorage != nullptr && orderStorage->IsLoaded());
+}
+
 // =================================================================
 //  CAC PHUONG THUC NOI BO
 // =================================================================
-
-// Nap danh sach don hang tu CSV len RAM
-bool OrderManager::LoadFromFile() {
-    orderList.clear();
-    return DataManager::LoadOrders(dataFilePath, orderList);
-}
 
 // Lay ngay gio he thong hien tai theo chuan YYYY-MM-DD HH:MM
 string OrderManager::GetCurrentDateTime() {
@@ -76,16 +72,18 @@ bool OrderManager::IsDateInRange(const string& targetDate, const string& fromDat
     if (!toDate.empty() && !IsDateBeforeOrEqual(targetOnlyDate, toDate)) {
         return false;
     }
+
     return true;
 }
 
 // Sinh ma don hang tu dong (Tim chi so lon nhat va tang 1)
 string OrderManager::GenerateOrderID() {
     int maxID = 1000;
-    int count = (int)orderList.size();
+    vector<OrderRecord> list = GetAllOrders();
+    int count = (int)list.size();
 
     for (int i = 0; i < count; i++) {
-        const string& idStr = orderList[i].OrderID;
+        const string& idStr = list[i].OrderID;
         if (idStr.length() > 3 && idStr.substr(0, 3) == "ORD") {
             int num = stoi(idStr.substr(3));
             if (num > maxID) {
@@ -136,18 +134,17 @@ bool OrderManager::Checkout(Cart& cart,
     string newOrderID = GenerateOrderID();
     string itemsSummary = cart.GetItemsSummary();
 
-    // 5. Luu ban ghi vao danh sach bo nho RAM
+    // 5. Luu ban ghi vao kho luu tru don hang (Tang 2: OrderStorage)
     OrderRecord newOrder(newOrderID, customer.getUID(), customer.getName(), finalDate, (unsigned long long)totalAmount, itemsSummary);
-    orderList.push_back(newOrder);
+    if (orderStorage != nullptr) {
+        orderStorage->AddOrder(newOrder);
+    }
 
-    // 6. Ghi noi tiep vao Data/Orders.csv
-    DataManager::AppendOrder(dataFilePath, newOrder);
-
-    // 7. Xuat phieu in hoa don .txt vao thu muc Invoices/
+    // 6. Xuat phieu in hoa don .txt vao thu muc Invoices/
     string receiptPath = invoiceFolderPath + "HD_" + newOrderID + ".txt";
     cart.ExportReceiptTXT(receiptPath, newOrderID, customer.getName(), cashierName, finalDate);
 
-    // 8. Tra ve thong tin neu co yeu cau
+    // 7. Tra ve thong tin neu co yeu cau
     if (outOrderID != nullptr) {
         *outOrderID = newOrderID;
     }
@@ -155,7 +152,7 @@ bool OrderManager::Checkout(Cart& cart,
         *outReceiptPath = receiptPath;
     }
 
-    // 9. Lam sach gio hang (khong hoan lai ton kho vi da thanh toan thanh cong)
+    // 8. Lam sach gio hang (khong hoan lai ton kho vi da thanh toan thanh cong)
     cart.Clear(nullptr);
 
     return true;
@@ -168,26 +165,29 @@ bool OrderManager::Checkout(Cart& cart,
 // Tinh tong doanh thu toan bo don hang
 unsigned long long OrderManager::GetTotalRevenue() const {
     unsigned long long total = 0;
-    int count = (int)orderList.size();
+    vector<OrderRecord> list = GetAllOrders();
+    int count = (int)list.size();
     for (int i = 0; i < count; i++) {
-        total += orderList[i].TotalAmount;
+        total += list[i].TotalAmount;
     }
     return total;
 }
 
 // Lay tong so luong don hang da xu ly
 int OrderManager::GetTotalOrderCount() const {
-    return (int)orderList.size();
+    if (orderStorage == nullptr) return 0;
+    return orderStorage->GetOrderCount();
 }
 
 // Loc danh sach don hang theo khoang ngay [fromDate, toDate]
 vector<OrderRecord> OrderManager::FilterByDate(const string& fromDate, const string& toDate) const {
     vector<OrderRecord> result;
-    int count = (int)orderList.size();
+    vector<OrderRecord> list = GetAllOrders();
+    int count = (int)list.size();
 
     for (int i = 0; i < count; i++) {
-        if (IsDateInRange(orderList[i].OrderDate, fromDate, toDate)) {
-            result.push_back(orderList[i]);
+        if (IsDateInRange(list[i].OrderDate, fromDate, toDate)) {
+            result.push_back(list[i]);
         }
     }
 
@@ -197,11 +197,12 @@ vector<OrderRecord> OrderManager::FilterByDate(const string& fromDate, const str
 // Loc danh sach don hang theo dinh danh nguoi mua (UID)
 vector<OrderRecord> OrderManager::FilterByCustomer(long long uid) const {
     vector<OrderRecord> result;
-    int count = (int)orderList.size();
+    vector<OrderRecord> list = GetAllOrders();
+    int count = (int)list.size();
 
     for (int i = 0; i < count; i++) {
-        if (orderList[i].UID == uid) {
-            result.push_back(orderList[i]);
+        if (list[i].UID == uid) {
+            result.push_back(list[i]);
         }
     }
 
@@ -210,5 +211,6 @@ vector<OrderRecord> OrderManager::FilterByCustomer(long long uid) const {
 
 // Lay toan bo danh sach don hang
 vector<OrderRecord> OrderManager::GetAllOrders() const {
-    return orderList;
+    if (orderStorage == nullptr) return vector<OrderRecord>();
+    return orderStorage->GetAllOrders();
 }

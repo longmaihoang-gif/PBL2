@@ -156,6 +156,13 @@ vector<CartItem> Cart::ToVector() const {
 }
 
 // =================================================================
+//  Lay thong tin tong quan gio hang (Ghi de Entity)
+// =================================================================
+string Cart::GetInfo() const {
+    return "[" + Name + "] So loai mat hang: " + to_string(totalItems) + " | Tong tien: " + to_string(GetTotalAmount()) + " VND";
+}
+
+// =================================================================
 //  Tao chuoi tong ket mat hang (ghi vao Orders.csv)
 // =================================================================
 string Cart::GetItemsSummary() const {

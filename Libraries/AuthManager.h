@@ -20,7 +20,6 @@ enum AuthResult {
 
 // =================================================================
 //  AUTH MANAGER: Module nghiệp vụ xác thực & quản lý phiên làm việc
-//  - Tách bạch hoàn toàn logic xác thực khỏi việc đọc ghi tệp tin
 // =================================================================
 class AuthManager {
 private:

@@ -21,6 +21,8 @@
 #include "../Libraries/AccountStorage.h"
 #include "../Libraries/AuthManager.h"
 #include "../Libraries/ProductStorage.h"
+#include "../Libraries/ProductService.h"
+#include "../Libraries/OrderStorage.h"
 #include "../Libraries/OrderManager.h"
 
 using namespace std;
@@ -221,18 +223,21 @@ int main() {
     bool foundID = (pItem1 != nullptr && pItem1->Name == "Sua Tuoi Vinamilk");
     cout << "  1. Tra cuu O(1) theo Ma SP (FOOD-001): " << (foundID ? "DUNG (Sua Tuoi Vinamilk)" : "SAI") << "\n";
 
+    // Khoi tao ProductService (Tang 3: Service & Thuat toan)
+    ProductService productService(&productRepo);
+
     // Tim kiem theo ten khong phan biet hoa thuong
-    vector<ShopItem*> searchResults = productRepo.SearchByName("banh mi");
+    vector<ShopItem*> searchResults = productService.SearchByName("banh mi");
     bool searchOk = (!searchResults.empty() && searchResults[0]->ProductID == "FOOD-002");
     cout << "  2. Tim kiem theo ten khong phan biet hoa thuong ('banh mi'): " 
          << (searchOk ? "DUNG (" + searchResults[0]->Name + ")" : "SAI") << "\n";
 
     // Kiem tra loc danh muc Food
-    vector<ShopItem*> foodItems = productRepo.GetByCategory("Food");
+    vector<ShopItem*> foodItems = productService.GetByCategory("Food");
     cout << "  3. Loc danh muc Food: Tim thay " << foodItems.size() << " mat hang.\n";
 
     // Kiem tra canh bao ton kho thap (< 5)
-    vector<ShopItem*> lowStock = productRepo.GetLowStockProducts(5);
+    vector<ShopItem*> lowStock = productService.GetLowStockProducts(5);
     cout << "  4. Canh bao ton kho duoi 5 mon: Tim thay " << lowStock.size() << " san pham.\n";
     for (int i = 0; i < (int)lowStock.size(); i++) {
         cout << "     -> [" << lowStock[i]->ProductID << "] " << lowStock[i]->Name 
@@ -240,7 +245,7 @@ int main() {
     }
 
     // Kiem tra canh bao han dung (can date hoac qua han so voi 2024-03-10)
-    vector<FoodItem*> nearExpiry = productRepo.GetExpiringFoodProducts("2024-03-10");
+    vector<FoodItem*> nearExpiry = productService.GetExpiringFoodProducts("2024-03-10");
     cout << "  5. Canh bao han dung truoc hoac trong ngay 2024-03-10: Tim thay " << nearExpiry.size() << " mat hang.\n";
     for (int i = 0; i < (int)nearExpiry.size(); i++) {
         cout << "     -> [" << nearExpiry[i]->ProductID << "] " << nearExpiry[i]->Name 
@@ -265,13 +270,36 @@ int main() {
     cout << "  8. Don dep san pham test sau kiem thu: " 
          << (removeProdOk && !productRepo.Exists(testProdID) ? "THANH CONG (File Products.csv sach se)" : "THAT BAI") << "\n";
 
-    // 7. Kiem thu Module OrderManager & Xuat Hoa Don (.txt)
+    // 6.5. Kiem thu Tinh Da Hinh cua Lop Truu Tuong Entity (GetInfo)
     cout << "\n============================================================\n";
-    cout << "   KIEM THU MODULE HOA DON & THANH TOAN (ORDER MANAGER)\n";
+    cout << "   KIEM THU TINH DA HINH LOP TRUU TUONG (ENTITY::GETINFO)\n";
+    cout << "============================================================\n";
+    vector<Entity*> polymorphicEntities;
+    Account demoAcc("demo_user", "123456", "Nguyen Van Demo", User, 50000);
+    FoodItem demoFood("FD-01", "Sua Tuoi Tiet Trung", 12000, 30, "Sua bo tuoi", "2024-03-01", "2024-04-01");
+    ElectronicItem demoElec("EL-01", "May Say Toc", 250000, 15, "Cong suat lon", 12, 1200);
+    Cart demoCart("Khach Mua Sam");
+    demoCart.AddItem(&demoFood, 2);
+
+    polymorphicEntities.push_back(&demoAcc);
+    polymorphicEntities.push_back(&demoFood);
+    polymorphicEntities.push_back(&demoElec);
+    polymorphicEntities.push_back(&demoCart);
+
+    for (int i = 0; i < (int)polymorphicEntities.size(); i++) {
+        cout << "  -> " << polymorphicEntities[i]->GetInfo() << "\n";
+    }
+
+    // 7. Kiem thu Module Hoa Don & Thanh Toan (OrderStorage Tang 2 & OrderManager Tang 3)
+    cout << "\n============================================================\n";
+    cout << "   KIEM THU MODULE HOA DON & THANH TOAN (ORDER STORAGE & MANAGER)\n";
     cout << "============================================================\n";
 
-    OrderManager orderManager(&accountRepo, "Data/Orders.csv", "Invoices/");
-    cout << "[KHOI TAO] OrderManager: " << (orderManager.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+    OrderStorage orderStorage("Data/Orders.csv");
+    cout << "[KHOI TAO] OrderStorage (Tang 2): " << (orderStorage.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
+
+    OrderManager orderManager(&orderStorage, &accountRepo, "Invoices/");
+    cout << "[KHOI TAO] OrderManager (Tang 3): " << (orderManager.IsLoaded() ? "THANH CONG" : "THAT BAI") << "\n";
 
     int initialOrderCount = orderManager.GetTotalOrderCount();
     unsigned long long initialRevenue = orderManager.GetTotalRevenue();

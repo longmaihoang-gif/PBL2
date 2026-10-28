@@ -33,6 +33,11 @@ class ShopItem : public Entity {
         }
 
         virtual ~ShopItem() {}
+
+        // Thong tin tong quan mon hang (Ghi de Entity)
+        virtual string GetInfo() const override {
+            return "[San pham] Ma: " + ProductID + " | Ten: " + Name + " | Loai: " + Category + " | Gia: " + to_string(Price) + " VND | Ton: " + to_string(QuantityRemaining);
+        }
 };
 
 // =================================================================
@@ -47,6 +52,11 @@ class FoodItem : public ShopItem {
             : ShopItem(id, name, "Food", price, qty, desc), ManufactureDate(nsx), ExpiryDate(hsd) {}
 
         virtual ~FoodItem() {}
+
+        // Thong tin tong quan thuc pham (Ghi de da hinh)
+        virtual string GetInfo() const override {
+            return ShopItem::GetInfo() + " | NSX: " + ManufactureDate + " | HSD: " + ExpiryDate;
+        }
 };
 
 // =================================================================
@@ -61,4 +71,9 @@ class ElectronicItem : public ShopItem {
             : ShopItem(id, name, "Electronics", price, qty, desc), WarrantyMonths(warranty), PowerWatts(power) {}
 
         virtual ~ElectronicItem() {}
+
+        // Thong tin tong quan dien may (Ghi de da hinh)
+        virtual string GetInfo() const override {
+            return ShopItem::GetInfo() + " | Bao hanh: " + to_string(WarrantyMonths) + " thang | Cong suat: " + to_string(PowerWatts) + "W";
+        }
 };

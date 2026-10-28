@@ -61,4 +61,9 @@ class Account : public Entity {
         bool VerifyPassword(const string &inputPassword) const {
             return Password == inputPassword;
         }
+
+        // Thong tin tong quan tai khoan (Ghi de Entity)
+        virtual string GetInfo() const override {
+            return "[Tai khoan] UID: " + to_string(UID) + " | User: " + Username + " (" + Name + ") | Quyen: " + (Permission == Admin ? "Admin" : "User") + " | So du: " + to_string(getBalance()) + " VND";
+        }
 };

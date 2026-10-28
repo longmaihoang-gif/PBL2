@@ -23,9 +23,6 @@ private:
     // Dong bo toan bo du lieu tu bang bam xuong tep CSV
     bool SaveToFile();
 
-    // Ham bo tro so sanh ngay han dung (yyyy-mm-dd) dung substr va stoi
-    static bool IsDateExpiredOrNear(const string& expiryDate, const string& alertDate);
-
     // Ngan chan sao chep ngam gay loi double-free
     ProductStorage(const ProductStorage&);
     ProductStorage& operator=(const ProductStorage&);
@@ -61,18 +58,6 @@ public:
 
     // Trich xuat toan bo danh sach san pham
     vector<ShopItem*> GetAllProducts();
-
-    // Tim kiem san pham theo ten (khong phan biet hoa thuong co ban)
-    vector<ShopItem*> SearchByName(const string& keyword);
-
-    // Loc san pham theo phan loai ("Food" hoac "Electronics")
-    vector<ShopItem*> GetByCategory(const string& category);
-
-    // Loc danh sach san pham co ton kho duoi nguong canh bao (mac dinh < 5)
-    vector<ShopItem*> GetLowStockProducts(int threshold = 5);
-
-    // Loc danh sach thuc pham can date hoac da qua han so voi alertDate
-    vector<FoodItem*> GetExpiringFoodProducts(const string& alertDate);
 
     // Lay tham chieu toi Bang bam de ket noi voi gio hang (Cart Undo/Clear)
     HashTable<ShopItem*>& GetTableRef() { return productTable; }

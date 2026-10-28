@@ -53,6 +53,7 @@ class Cart : public Entity {
         bool IsEmpty() const;
         vector<CartItem> ToVector() const;
         string GetItemsSummary() const;
+        virtual string GetInfo() const override;
 
         // Hien thi giao dien va xuat hoa don
         void PrintCart() const;

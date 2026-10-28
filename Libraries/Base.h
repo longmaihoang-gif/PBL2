@@ -1,17 +1,15 @@
 #pragma once
 #include <string>
-#include <vector>
-
-using namespace std;
 
 // =================================================================
-//  ENTITY: Lớp thực thể cơ sở
+//  ENTITY: Lop thuc the co so truu tuong
 // =================================================================
 class Entity {
+        std::string Name;
     public:
-        string Name;
-        vector<string> Tags;
-
-        // Destructor ảo: Đảm bảo an toàn giải phóng bộ nhớ khi kế thừa
+        Entity(const std::string& name = "") : Name(name) {}
         virtual ~Entity() {}
+
+        // Ham thuan ao: Bat buoc moi thuc the phai cung cap chuoi thong tin tong quan
+        virtual std::string GetInfo() const = 0;
 };
