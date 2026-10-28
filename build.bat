@@ -33,9 +33,7 @@ echo [INFO] Dang bien dich cac tep ma nguon...
 g++ -std=c++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     src/UI.cpp ^
     Libraries/Cart.cpp ^
-    Libraries/DLinkedList.cpp ^
     Libraries/DataManager.cpp ^
-    Libraries/HashTable.cpp ^
     Libraries/AccountStorage.cpp ^
     Libraries/AuthManager.cpp ^
     Libraries/ProductStorage.cpp ^

@@ -15,10 +15,8 @@ PBL2/
 │   ├── Account.h        # Thực thể tài khoản người dùng & phân quyền (Role)
 │   ├── Item.h           # Phân cấp kế thừa hàng hóa: Item, ShopItem, FoodItem, ElectronicItem
 │   ├── Shop.h           # Quản lý quầy kệ (ShopShelf) và cửa hàng (Shop)
-│   ├── HashTable.h      # Khung khai báo Bảng băm mẫu (template HashTable<T>)
-│   ├── HashTable.cpp    # Hiện thực chi tiết giải thuật Bảng băm (Separate Chaining + DJB2)
-│   ├── DLinkedList.h    # Khung khai báo Nút danh sách liên kết đôi mẫu (template Node<T>)
-│   ├── DLinkedList.cpp  # Hiện thực chi tiết thao tác chèn/xóa liên kết đôi
+│   ├── HashTable.h      # Bảng băm mẫu (template HashTable<T>, Header-Only)
+│   ├── DLinkedList.h    # Nút danh sách liên kết đôi mẫu (template Node<T>, Header-Only)
 │   ├── DataManager.h    # Khai báo module bóc tách CSV và đồng bộ dữ liệu
 │   ├── DataManager.cpp  # Hiện thực chi tiết đọc/ghi CSV chuẩn RFC 4180
 │   ├── AccountStorage.h # Tầng 2: Kho trung gian quản lý tài khoản HashTable và CSV
