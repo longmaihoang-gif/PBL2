@@ -19,7 +19,11 @@ enum Role {
 // =================================================================
 class Account : public Entity {
     private:
-        inline static long long GUID = 1000;
+        static long long& GetNextGUID() {
+            static long long currentGUID = 1000;
+            return currentGUID;
+        }
+
         long long UID;
         string Username;
         string Password;
@@ -29,7 +33,7 @@ class Account : public Entity {
     public:
         // Constructor tao tai khoan moi (tu dong cap UID tang dan)
         Account(const string &username = "", const string &password = "", const string &fullName = "", Role role = User, unsigned long long initialMoney = 0)
-            : UID(++GUID), Username(username), Password(password), Permission(role), UserWallet(initialMoney) {
+            : UID(++GetNextGUID()), Username(username), Password(password), Permission(role), UserWallet(initialMoney) {
             Name = fullName;
         }
 
@@ -37,7 +41,7 @@ class Account : public Entity {
         Account(long long fixedUID, const string &username, const string &password, const string &fullName, Role role = User, unsigned long long initialMoney = 0)
             : UID(fixedUID), Username(username), Password(password), Permission(role), UserWallet(initialMoney) {
             Name = fullName;
-            if (fixedUID >= GUID) GUID = fixedUID; // Dong bo moc GUID ke tiep
+            if (fixedUID >= GetNextGUID()) GetNextGUID() = fixedUID; // Dong bo moc GUID ke tiep
         }
 
         virtual ~Account() {}

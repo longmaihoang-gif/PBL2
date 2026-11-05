@@ -186,27 +186,29 @@ void RenderHeaderBar(AuthManager& authManager, ProductStorage& productStorage, C
     if (acc == nullptr) return;
 
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.10f, 0.12f, 0.16f, 1.0f));
-    ImGui::BeginChild("HeaderBar", ImVec2(0, 48), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("HeaderBar", ImVec2(0, 50), true, ImGuiWindowFlags_NoScrollbar);
 
-    // Tên ứng dụng
-    ImGui::SetCursorPosY(10);
-    ImGui::TextColored(ImVec4(0.40f, 0.80f, 1.00f, 1.0f), "PBL2 - HE THONG BAN HANG & QUAN LY KHO");
+    ImGui::SetCursorPosY(12);
+    ImGui::TextColored(ImVec4(0.35f, 0.75f, 1.0f, 1.0f), "  PBL2 - HE THONG BAN HANG & QUAN LY KHO");
 
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 560);
-    
-    // Thông tin người dùng
     string roleStr = (acc->getPermission() == Admin) ? "[ADMIN]" : "[KHACH HANG]";
-    ImGui::Text("Nguoi dung: %s (%s)", acc->getName().c_str(), roleStr.c_str());
+    float availWidth = ImGui::GetWindowWidth();
+
+    if (availWidth > 750.0f) {
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(availWidth - 560.0f);
+        ImGui::Text("Nguoi dung: %s (%s)", acc->getName().c_str(), roleStr.c_str());
+
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.40f, 1.00f, 0.50f, 1.0f), "| Vi: %s", FormatMoney(acc->getBalance()).c_str());
+    }
 
     ImGui::SameLine();
-    ImGui::TextColored(ImVec4(0.40f, 1.00f, 0.50f, 1.0f), "| Vi: %s", FormatMoney(acc->getBalance()).c_str());
-
-    ImGui::SameLine();
-    ImGui::SetCursorPosY(6);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.65f, 0.20f, 0.20f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
-    if (ImGui::Button("Dang xuat", ImVec2(90, 32))) {
+    ImGui::SetCursorPosX(availWidth - 150.0f);
+    ImGui::SetCursorPosY(8);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.75f, 0.20f, 0.20f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.90f, 0.25f, 0.25f, 1.0f));
+    if (ImGui::Button(" [X] Dang xuat ", ImVec2(130, 32))) {
         // Neu co gio hang cua user, hoan tra ton kho truoc khi dang xuat
         if (activeCart != nullptr) {
             activeCart->Clear(&productStorage.GetTableRef());
@@ -221,6 +223,7 @@ void RenderHeaderBar(AuthManager& authManager, ProductStorage& productStorage, C
 
     ImGui::EndChild();
     ImGui::PopStyleColor();
+    ImGui::Spacing();
 }
 
 // =================================================================
@@ -400,15 +403,19 @@ void RenderLoginScreen(AuthManager& authManager, ProductStorage& productStorage,
 //  MÀN HÌNH 2: GIAO DIỆN KHÁCH HÀNG (USER POS / SHOPPING)
 // =================================================================
 void RenderUserScreen(AuthManager& authManager, ProductStorage& productStorage, ProductService& productService, OrderManager& orderManager, Cart*& activeCart) {
-    RenderHeaderBar(authManager, productStorage, activeCart);
-
-    ImGui::SetNextWindowPos(ImVec2(0, 52));
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 52));
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
     ImGui::Begin("UserMainWindow", nullptr, flags);
 
+    RenderHeaderBar(authManager, productStorage, activeCart);
+
     Account* currentUser = authManager.GetCurrentAccount();
+    if (currentUser == nullptr) {
+        ImGui::End();
+        return;
+    }
 
     if (ImGui::BeginTabBar("UserTabBar")) {
         // =========================================================
@@ -542,6 +549,15 @@ void RenderUserScreen(AuthManager& authManager, ProductStorage& productStorage, 
                 }
                 ImGui::EndTable();
             }
+
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN ADMIN", ImVec2(240, 34))) {
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+            }
+            ImGui::PopStyleColor(2);
 
             ImGui::EndTabItem();
         }
@@ -727,6 +743,15 @@ void RenderUserScreen(AuthManager& authManager, ProductStorage& productStorage, 
                 ImGui::EndTable();
             }
 
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN ADMIN", ImVec2(240, 34))) {
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+            }
+            ImGui::PopStyleColor(2);
+
             ImGui::EndTabItem();
         }
 
@@ -780,6 +805,25 @@ void RenderUserScreen(AuthManager& authManager, ProductStorage& productStorage, 
                 }
             }
 
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // Nút đăng xuất trực tiếp tại trang tài khoản
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN", ImVec2(220, 36))) {
+                if (activeCart != nullptr) {
+                    activeCart->Clear(&productStorage.GetTableRef());
+                    delete activeCart;
+                    activeCart = nullptr;
+                }
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+                userActionMsg = "";
+            }
+            ImGui::PopStyleColor(2);
+
             ImGui::EndTabItem();
         }
 
@@ -793,13 +837,13 @@ void RenderUserScreen(AuthManager& authManager, ProductStorage& productStorage, 
 //  MÀN HÌNH 3: GIAO DIỆN QUẢN TRỊ VIÊN (ADMIN DASHBOARD)
 // =================================================================
 void RenderAdminScreen(AuthManager& authManager, ProductStorage& productStorage, ProductService& productService, OrderManager& orderManager, AccountStorage& accountStorage, Cart*& activeCart) {
-    RenderHeaderBar(authManager, productStorage, activeCart);
-
-    ImGui::SetNextWindowPos(ImVec2(0, 52));
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - 52));
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
     ImGui::Begin("AdminMainWindow", nullptr, flags);
+
+    RenderHeaderBar(authManager, productStorage, activeCart);
 
     if (ImGui::BeginTabBar("AdminTabBar")) {
         // =========================================================
@@ -986,6 +1030,15 @@ void RenderAdminScreen(AuthManager& authManager, ProductStorage& productStorage,
                 ImGui::EndTable();
             }
 
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN ADMIN", ImVec2(240, 34))) {
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+            }
+            ImGui::PopStyleColor(2);
+
             ImGui::EndTabItem();
         }
 
@@ -1165,6 +1218,15 @@ void RenderAdminScreen(AuthManager& authManager, ProductStorage& productStorage,
                 ImGui::EndTable();
             }
 
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN ADMIN", ImVec2(240, 34))) {
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+            }
+            ImGui::PopStyleColor(2);
+
             ImGui::EndTabItem();
         }
 
@@ -1258,6 +1320,15 @@ void RenderAdminScreen(AuthManager& authManager, ProductStorage& productStorage,
                 }
                 ImGui::EndTable();
             }
+
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+            if (ImGui::Button("DANG XUAT TAI KHOAN ADMIN", ImVec2(240, 34))) {
+                authManager.Logout();
+                currentScreen = SCREEN_LOGIN;
+            }
+            ImGui::PopStyleColor(2);
 
             ImGui::EndTabItem();
         }

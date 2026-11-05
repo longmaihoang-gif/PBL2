@@ -13,8 +13,12 @@ class ShopShelf : public Entity {
     public:
         vector<ShopItem> ShelfItems;
 
-        ShopShelf() {}
+        ShopShelf() { Name = "Ke Hang"; }
         virtual ~ShopShelf() {}
+
+        virtual string GetInfo() const override {
+            return "[Ke hang] So loai mat hang trung bay: " + to_string(ShelfItems.size());
+        }
 };
 
 // =================================================================
@@ -24,6 +28,10 @@ class Shop : public Entity {
     public:
         vector<ShopShelf> Shelfs;
 
-        Shop() {}
+        Shop() { Name = "Cua Hang"; }
         virtual ~Shop() {}
+
+        virtual string GetInfo() const override {
+            return "[Cua hang] So quay ke: " + to_string(Shelfs.size());
+        }
 };

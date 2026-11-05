@@ -2527,10 +2527,6 @@ const char* ImHashSkipUncontributingPrefix(const char* label)
 // Default file functions
 #ifndef IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
 
-#if defined(_WIN32) && defined(__MINGW32__)
-extern "C" FILE* _wfopen(const wchar_t* filename, const wchar_t* mode);
-#endif
-
 ImFileHandle ImFileOpen(const char* filename, const char* mode)
 {
 #if defined(_WIN32) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS) && (defined(__MINGW32__) || (!defined(__CYGWIN__) && !defined(__GNUC__)))

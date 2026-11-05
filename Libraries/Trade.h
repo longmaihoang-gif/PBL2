@@ -10,8 +10,15 @@ class Wallet : public Entity {
         unsigned long long Point;
 
     public:
-        Wallet(unsigned long long initialBalance = 0) : Balance(initialBalance) {}
+        Wallet(unsigned long long initialBalance = 0) : Balance(initialBalance), Point(0) {
+            Name = "Vi Tien";
+        }
         virtual ~Wallet() {}
+
+        // Thong tin tong quan vi tien (Ghi de Entity)
+        virtual std::string GetInfo() const override {
+            return "[Vi tien] So du: " + std::to_string(Balance) + " VND";
+        }
 
         // Truy xuất số lượng tiền (Get Money Count)
         unsigned long long GetMoneyCount() const { return Balance; }

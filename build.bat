@@ -8,6 +8,9 @@ echo   [BUILD] DANG BIEN DICH DU AN PBL2 (C++17 + ImGui + GLFW)
 echo ============================================================
 
 :: 1. Kiem tra trinh bien dich g++
+if exist "C:\msys64\mingw64\bin\g++.exe" (
+    set "PATH=C:\msys64\mingw64\bin;%PATH%"
+)
 where g++ >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     color 0C
@@ -17,9 +20,18 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: 2. Tao thu muc bin va sao chep runtime dependencies
+:: 2. Kiem tra va tu dong bo sung thu vien GLFW neu bi thieu do .gitignore
+if not exist "Libraries\glfw-3.4.bin.WIN64\lib-mingw-w64\libglfw3.a" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File setup_glfw.ps1
+)
+
+:: 3. Tao thu muc bin va sao chep runtime dependencies
 if not exist "bin" mkdir "bin"
 
+if exist "Libraries\glfw-3.4.bin.WIN64\lib-mingw-w64\glfw3.dll" (
+    copy /y "Libraries\glfw-3.4.bin.WIN64\lib-mingw-w64\glfw3.dll" "bin\" > nul
+    copy /y "Libraries\glfw-3.4.bin.WIN64\lib-mingw-w64\glfw3.dll" ".\" > nul
+)
 if exist "Libraries\glfw3.dll" (
     copy /y "Libraries\glfw3.dll" "bin\" > nul
     copy /y "Libraries\glfw3.dll" ".\" > nul
@@ -28,7 +40,7 @@ if exist "Libraries\tahoma.ttf" (
     copy /y "Libraries\tahoma.ttf" "bin\" > nul
 )
 
-:: 3. Thuc hien bien dich toan bo ma nguon va thu vien do hoa
+:: 4. Thuc hien bien dich toan bo ma nguon va thu vien do hoa
 echo [INFO] Dang bien dich cac tep ma nguon...
 g++ -std=gnu++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     src/UI.cpp ^
@@ -54,7 +66,7 @@ g++ -std=gnu++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     -lglfw3 -lopengl32 -lgdi32 ^
     -o bin/app.exe
 
-:: 4. Kiem tra ket qua bien dich
+:: 5. Kiem tra ket qua bien dich
 if %ERRORLEVEL% EQU 0 (
     echo.
     echo [SUCCESS] Bien dich thanh cong ruc ro!
