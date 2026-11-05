@@ -11,7 +11,7 @@ struct HashNode {
     T value;
     HashNode<T>* next;
     HashNode<T>* prev;
-
+//khi xảy ra xung đột băm ( 2 key khác nhau nhưng ra cùng chỉ số bucket) các nút sẽ được móc nối với nhau thành một danh sách liên kết đôi (Phương pháp Separate Chaining)
     HashNode(const std::string& k, const T& v)
         : key(k), value(v), next(nullptr), prev(nullptr) {}
 };
@@ -28,26 +28,27 @@ private:
     float loadFactorThreshold;     // Nguong qua tai de Rehash
 
     // Ham bam chuoi ky tu (Thuat toan DJB2)
-    int HashFunction(const std::string& key) const {
+    int HashFunction(const std::string& key) const { //& mượn trực tiếp . tham chiếu 
         unsigned long hash = 5381;
+//Số 5381 là số nguyên tố khởi tạo kỳ diệu, và việc nhân liên tiếp với 33 giúp các bit được phân tán cực kỳ đều, giảm tối đa hiện tượng đụng độ băm.
         int len = (int)key.length();
         for (int i = 0; i < len; i++) {
             unsigned char c = (unsigned char)key[i];
             hash = hash * 33 + c;
         }
         return (int)(hash % capacity);
-    }
+    } //->Chuyển đổi một chuỗi ký tự bất kỳ thành một số nguyên hợp lệ nằm trong khoảng [0,capacity -1]
 
     // Tai cau truc lai bang bam khi vuot nguong tai
     void Rehash() {
         int oldCapacity = capacity;
-        int newCapacity = capacity * 2 + 1;
+        int newCapacity = capacity * 2 + 1;//tạo mảng mới to gấp đôi 
 
         HashNode<T>** newBuckets = new HashNode<T>*[newCapacity];
         for (int i = 0; i < newCapacity; i++) {
             newBuckets[i] = nullptr;
         }
-
+// cấp phát và khởi tạo toàn bộ bằng NULL
         capacity = newCapacity;
 
         for (int i = 0; i < oldCapacity; i++) {
@@ -69,8 +70,8 @@ private:
             }
         }
 
-        delete[] buckets;
-        buckets = newBuckets;
+        delete[] buckets;/////////////////
+        buckets = newBuckets;////////////
     }
 
     // Ngan chan sao chep ngam gay loi double-free
@@ -138,7 +139,8 @@ public:
 
         while (current != nullptr) {
             if (current->key == key) {
-                return &(current->value);
+                return &(current->value); // khi dấu & đặt trước biến thì nó là toán tử lấy địa chỉ 
+                //Cho phép sửa trực tiếp dữ liệu gốc.
             }
             current = current->next;
         }

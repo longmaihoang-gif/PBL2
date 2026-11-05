@@ -51,6 +51,11 @@ class Account : public Entity {
         Wallet& getWallet() { return UserWallet; }
         unsigned long long getBalance() const { return UserWallet.GetMoneyCount(); }
 
+        // Khau tru so du vi tien (Tra ve false neu so du khong du)
+        bool costBalance(unsigned long long amount) {
+            return UserWallet.CostMoney(amount);
+        }
+
         // Setter
         void setUsername(const string &username) { Username = username; }
         void setPassword(const string &password) { Password = password; }

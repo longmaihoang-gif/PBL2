@@ -30,7 +30,7 @@ if exist "Libraries\tahoma.ttf" (
 
 :: 3. Thuc hien bien dich toan bo ma nguon va thu vien do hoa
 echo [INFO] Dang bien dich cac tep ma nguon...
-g++ -std=c++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
+g++ -std=gnu++17 -finput-charset=utf-8 -fexec-charset=utf-8 ^
     src/UI.cpp ^
     Libraries/Cart.cpp ^
     Libraries/DataManager.cpp ^

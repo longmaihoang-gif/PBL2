@@ -136,8 +136,40 @@ Gồm các bộ điều phối nghiệp vụ và thuật toán, nhận con trỏ
 
 ---
 
-## 🎯 IV. Kế Hoạch Tiếp Theo
-1. Hoàn thiện giao diện đồ họa ImGui trong `src/UI.cpp`:
-   - Màn hình Đăng nhập / Đăng ký kết nối `AuthManager`.
-   - Màn hình User: Xem sản phẩm, giỏ hàng bán lẻ (`Cart`), thực hiện thanh toán trừ ví và xem lịch sử đơn hàng cá nhân.
-   - Màn hình Admin: Quản lý kho hàng (`ProductStorage`), xem danh sách cảnh báo tồn kho `< 5` và cận date (`ProductService`), xem bảng doanh thu và lịch sử đơn hàng (`OrderManager`).
+## 🖥️ IV. Giao Diện Đồ Họa Dear ImGui & GLFW Đã Hoàn Thiện 100% (`src/UI.cpp`)
+
+Toàn bộ hệ thống giao diện đồ họa tương tác thời gian thực đã được hiện thực hoàn chỉnh, kết nối trực tiếp với 3 tầng bên dưới:
+
+1. **Khởi tạo & Hỗ trợ Font Tiếng Việt:**
+   - Sử dụng cửa sổ độ phân giải $1280 \times 740$, khử răng cưa và đồng bộ khung hình V-Sync.
+   - Nạp phông chữ `Libraries/tahoma.ttf` kết hợp bảng ký tự `io.Fonts->GetGlyphRangesVietnamese()`, hiển thị trọn vẹn 100% tiếng Việt có dấu.
+   - Thiết lập phong cách Dark Theme hiện đại, khoảng cách và bo góc chuyên nghiệp (`SetupCustomDarkTheme`).
+
+2. **Màn hình Xác thực & Đăng ký (`RenderLoginScreen`):**
+   - Hộp thoại căn giữa màn hình với 2 tab tách biệt: **Đăng nhập** và **Đăng ký mới**.
+   - Kiểm tra rỗng, kiểm tra mật khẩu và bẫy lỗi trực quan bằng màu sắc (`AUTH_ERR_EMPTY_INPUT`, `AUTH_ERR_WRONG_PASSWORD`, `AUTH_ERR_USER_ALREADY_EXISTS`).
+   - Tích hợp các nút **Đăng nhập nhanh** (Quick Login) cho Admin (`admin/admin123`) và Khách hàng (`khachhang1/123456`), tối ưu thao tác khi vấn đáp bảo vệ đồ án.
+
+3. **Giao diện Khách hàng & Bán lẻ (`RenderUserScreen`):**
+   - **Thanh tiêu đề (Header Bar):** Hiển thị danh tính, vai trò và số dư ví tiền thời gian thực (`FormatMoney`).
+   - **Tab 1 - Mua sắm & Danh mục:** Thanh tìm kiếm theo tên không phân biệt hoa thường, bộ lọc phân loại (`Food` / `Electronics`), bảng sản phẩm hiển thị thông tin đa hình (HSD/NSX hoặc Bảo hành/Công suất), ô chọn số lượng mua và nút **Thêm vào giỏ** (kiểm tra tồn kho tự động).
+   - **Tab 2 - Giỏ hàng & Hoàn tác (Undo LIFO):** Bảng chi tiết giỏ hàng, tính tổng tiền tự động. Nút **Hoàn tác (Undo LIFO)** rút node ở đỉnh ngăn xếp và trả lại tồn kho tức thì. Nút **Thanh toán (Checkout)** trừ số dư ví, cập nhật tồn kho xuống `Products.csv`, xuất phiếu in nhiệt `.txt` trong `Invoices/` và ghi vào `Orders.csv`.
+   - **Tab 3 - Lịch sử Đơn hàng cá nhân:** Lọc các đơn của tài khoản hiện tại qua `OrderManager::FilterByCustomer(UID)`.
+   - **Tab 4 - Thông tin cá nhân & Đổi mật khẩu:** Xem chi tiết hồ sơ tài khoản và biểu mẫu cập nhật mật khẩu an toàn.
+
+4. **Giao diện Quản trị viên (`RenderAdminScreen`):**
+   - **Tab 1 - Quản lý Kho hàng:** Biểu mẫu thêm sản phẩm mới (Write-Through vào `Products.csv`), nút cộng nhanh tồn kho `+5 Kho`, và nút **Xóa sản phẩm** thu hồi bộ nhớ an toàn.
+   - **Tab 2 - Cảnh báo Tồn kho & Cận date:** Bảng cảnh báo tồn kho dưới 5 món (`GetLowStockProducts(5)`), bảng lọc thực phẩm cận date hoặc quá hạn trước mốc ngày chỉ định (`GetExpiringFoodProducts`).
+   - **Tab 3 - Báo cáo Doanh thu & Thống kê:** 2 thẻ tổng quan (Tổng doanh thu, Tổng số đơn), bộ lọc đơn hàng theo khoảng ngày `[TuNgay, DenNgay]`, và bảng tra cứu toàn bộ đơn hàng của cửa hàng.
+   - **Tab 4 - Quản lý Tài khoản & Nạp ví:** Bảng danh sách toàn bộ người dùng và quản trị viên, biểu mẫu **Nạp tiền vào ví** trực tiếp cho khách hàng và lưu bền vững xuống `Accounts.csv`.
+
+---
+
+## 🏆 V. Tổng Kết
+
+Dự án đã **hoàn thành 100% mục tiêu thiết kế và toàn bộ 4 tầng kiến trúc**:
+- Tầng 1: Database CSV (`DataManager`, `Accounts.csv`, `Products.csv`, `Orders.csv`)
+- Tầng 2: Data Access Layer (`HashTable`, `DLinkedList`, `ProductStorage`, `AccountStorage`, `OrderStorage`)
+- Tầng 3: Business Logic Layer (`AuthManager`, `ProductService`, `OrderManager`, `Cart`)
+- Tầng 4: Presentation Layer (`src/UI.cpp` bằng Dear ImGui + GLFW)
+- Tuân thủ 100% các quy tắc thiết kế C++ năm 2 (KISS, Strict Whitelist, không hack não, sẵn sàng bảo vệ vấn đáp điểm tối đa).

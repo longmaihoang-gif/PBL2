@@ -121,7 +121,7 @@ bool OrderManager::Checkout(Cart& cart,
 
     // 2. Dong bo so du vi moi xuong Accounts.csv
     if (accountStorage != nullptr) {
-        accountStorage->SaveToFile();
+        accountStorage->UpdateAccount(customer);
     }
 
     // 3. Xac dinh ngay gio giao dich

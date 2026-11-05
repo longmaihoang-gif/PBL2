@@ -21,7 +21,7 @@ Cart::~Cart() {
 //  Them san pham vao gio hang (Soft Reservation kho hang)
 // =================================================================
 bool Cart::AddItem(ShopItem* product, int quantity) {
-    if (product == nullptr || quantity <= 0) {
+    if (product == nullptr || quantity <= 0) { //sp ko tồn tại hoặc mã sp sai 
         return false;
     }
 
@@ -45,6 +45,8 @@ bool Cart::AddItem(ShopItem* product, int quantity) {
         tail = newNode;
     } else {
         tail->Insert(newNode);
+        //tail->next = newNode;
+        //newNode->prev = tail;
         tail = newNode;
     }
 

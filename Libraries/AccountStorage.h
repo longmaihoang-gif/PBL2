@@ -20,10 +20,10 @@ private:
     // Nap du lieu tu tep CSV vao bang bam RAM
     bool LoadFromFile();
 
+public:
     // Dong bo toan bo du lieu tu bang bam xuong tep CSV
     bool SaveToFile();
 
-public:
     // Khoi tao va tu dong nap du lieu tu tep tin
     AccountStorage(const string& filePath = "Data/Accounts.csv");
     ~AccountStorage();

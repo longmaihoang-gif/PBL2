@@ -168,7 +168,7 @@ bool ProductStorage::RemoveProduct(const string& productID) {
     delete itemToDelete;
     return SaveToFile();
 }
-
+//ShopItem* đại diện cho tính Đa hình, giúp 1 con trỏ quản lý được mọi lớp con trên cùng một hệ thống!
 // Lay toan bo danh sach san pham
 vector<ShopItem*> ProductStorage::GetAllProducts() {
     return productTable.GetAllValues();

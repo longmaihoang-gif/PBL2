@@ -11,7 +11,7 @@ struct Node {
 
     Node(const T& val = T(), Node<T>* prevNode = nullptr, Node<T>* nextNode = nullptr)
         : value(val), prev(prevNode), next(nextNode) {}
-
+//nếu không truyền Val (nếu là số thì bằng 0, chuỗi thì là chuỗi rỗng "", struct thì khởi tạo rỗng)
     ~Node() {}
 
     // Chen target vao ngay sau nut hien tai (Insert After)
